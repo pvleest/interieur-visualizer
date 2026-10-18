@@ -95,7 +95,7 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
   const p2 = await ctx.newPage();
   const errs2 = []; p2.on('pageerror', (e) => errs2.push(e.message)); p2.on('console', (m) => { if (m.type() === 'error') errs2.push(m.text()); });
-  await p2.goto(share.replace(/^https?:\/\/[^/]+\//, base), { waitUntil: 'load' });
+  await p2.goto(share.replace(/^[^#]*#/, base.replace(/#.*$/, '') + '#'), { waitUntil: 'load' });
   await p2.waitForFunction(() => window.__ready === true, null, { timeout: 120000 });
   const after = await p2.evaluate(() => JSON.stringify(window.viz.getPlan()));
   check(after === before, 'shared link reproduces the exact plan on another device');
