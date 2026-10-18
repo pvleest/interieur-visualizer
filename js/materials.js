@@ -82,21 +82,29 @@ export function textures() {
   T.oakDark = canvasTex(512, (g, s) => woodGrain(g, s, rng(9), '#9c7652', '#5e4129', '#c49c72'), { repeat: 1.6 });
   T.planks = canvasTex(1024, (g, s) => {
     const r = rng(11);
-    const rows = 5; const h = s / rows; // 20 cm planks
+    const rows = 5; const h = s / rows; // 20 cm wide planks, 1 m texture
+    const tones = [[206, 172, 132], [199, 164, 124], [212, 180, 142], [194, 158, 118], [203, 170, 128]];
     for (let i = 0; i < rows; i++) {
-      let x = -r() * s;
+      let x = -r() * s * 0.8;
       while (x < s) {
-        const len = s * (0.9 + r() * 0.8);
-        const c = document.createElement('canvas'); c.width = c.height = 256;
-        const tones = ['#cfae86', '#c6a47b', '#d5b791', '#bf9c73'];
-        woodGrain(c.getContext('2d'), 256, rng(i * 31 + Math.floor(x)), tones[Math.floor(r() * tones.length)], '#8f6a45', '#e6cda7', 40);
-        g.save(); g.translate(x, i * h); g.rotate(0);
-        g.drawImage(c, 0, 0, 256, 256, 0, 0, len, h);
-        g.restore();
-        g.fillStyle = 'rgba(70,50,30,0.45)'; g.fillRect(x, i * h, 2, h);
+        const len = s * (0.8 + r() * 0.7);
+        const [cr, cg, cb] = tones[Math.floor(r() * tones.length)];
+        for (const off of [0, -s]) {
+          const px = x + off;
+          g.fillStyle = `rgb(${cr},${cg},${cb})`; g.fillRect(px, i * h, len, h);
+          for (let k = 0; k < 26; k++) {
+            const y = i * h + r() * h, a = 0.05 + r() * 0.12, amp = 1 + r() * 3;
+            g.strokeStyle = r() > 0.5 ? `rgba(120,85,50,${a})` : `rgba(240,215,180,${a})`;
+            g.lineWidth = 0.6 + r() * 1.6;
+            g.beginPath(); g.moveTo(px, y);
+            for (let t = 0; t <= len; t += 40) g.lineTo(px + t, y + Math.sin(t / (60 + k * 7) + k) * amp);
+            g.stroke();
+          }
+          g.fillStyle = 'rgba(80,58,36,0.55)'; g.fillRect(px, i * h, 2, h);
+        }
         x += len;
       }
-      g.fillStyle = 'rgba(70,50,30,0.5)'; g.fillRect(0, i * h, s, 2);
+      g.fillStyle = 'rgba(80,58,36,0.6)'; g.fillRect(0, i * h, s, 2);
     }
   }, { repeat: 1 });
   T.concrete = canvasTex(1024, (g, s) => {
@@ -208,9 +216,50 @@ export function materials() {
   return M;
 }
 
-export function mat(name) {
+// Human-readable names (Dutch) for the built-in materials, used in pickers.
+export const BUILTIN_LABELS = {
+  oak: 'Mat eiken', oakDark: 'Donker eiken', greige: 'Warm greige', greigeLight: 'Licht greige', black: 'Zwart',
+  composite: 'Licht composiet', tile: 'Greige tegel', steel: 'RVS', linen: 'Linnen',
+  planks: 'Eiken plankenvloer', concrete: 'Grijze gietvloer', epoxy: 'Epoxy grijs',
+};
+
+// Per-plan material context: palette roles ("@frontBase" -> "greige") and
+// custom material definitions ({ color, roughness, metalness, texture, label }).
+let palette = {}, customDefs = {};
+const customCache = new Map();
+export function setPlanMaterials(pal = {}, defs = {}) { palette = pal || {}; customDefs = defs || {}; }
+
+function customMaterial(name, def) {
+  const key = name + JSON.stringify(def);
+  if (customCache.has(key)) return customCache.get(key);
+  const t = textures();
+  const o = { color: def.color || '#cccccc', roughness: def.roughness ?? 0.8, metalness: def.metalness ?? 0 };
+  if (def.texture) {
+    const tex = def.texture === 'planks' ? t.planks : t[def.texture];
+    if (tex) o.map = tex;
+  }
+  const m = new THREE.MeshStandardMaterial(o);
+  m.name = name;
+  customCache.set(key, m);
+  return m;
+}
+
+export function resolveName(name, depth = 0) {
+  if (typeof name === 'string' && name.startsWith('@') && depth < 5) {
+    const v = palette[name.slice(1)];
+    if (v === undefined) { console.warn('Unknown palette role', name); return null; }
+    return resolveName(v, depth + 1);
+  }
+  return name;
+}
+
+export function mat(nameIn) {
   const m = materials();
+  const name = resolveName(nameIn);
   if (!name) return m.greige;
+  if (typeof name === 'object') return customMaterial('_inline', name);
+  if (customDefs[name]) return customMaterial(name, customDefs[name]);
+  if (name === 'planks') return m.floor.oak;
   if (m[name] && m[name].isMaterial) return m[name];
   if (m.floor[name]) return m.floor[name];
   if (typeof name === 'string' && name.startsWith('#')) {
@@ -219,4 +268,12 @@ export function mat(name) {
   }
   console.warn('Unknown material', name);
   return m.greige;
+}
+
+// Swatch colour for UI pickers.
+export function swatchColor(nameIn) {
+  const name = resolveName(nameIn);
+  if (customDefs[name]) return customDefs[name].color || '#ccc';
+  return { oak: '#c9a57c', oakDark: '#9c7652', greige: '#bcae9b', greigeLight: '#d8cdbd', black: '#1b1b1b', composite: '#ece8e1', tile: '#d7d0c4',
+    steel: '#c4c4c2', linen: '#ddd4c6', planks: '#cfae86', concrete: '#a3a19c', epoxy: '#7d8084' }[name] || (String(name).startsWith('#') ? name : '#ccc');
 }

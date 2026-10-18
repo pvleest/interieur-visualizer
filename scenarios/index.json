@@ -1,0 +1,6 @@
+{
+  "scenarios": [
+    {"id": "licht-warm", "name": "Licht & warm", "file": "scenarios/licht-warm.json"},
+    {"id": "donker-strak", "name": "Donker & strak", "file": "scenarios/donker-strak.json"}
+  ]
+}

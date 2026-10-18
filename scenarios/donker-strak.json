@@ -1,0 +1,33 @@
+{
+  "format": "interieur-scenario",
+  "version": 1,
+  "id": "donker-strak",
+  "name": "Donker & strak",
+  "description": "Antraciet matte greeploze fronten, een zwart composiet werkblad, een donkerdere gietvloer in de aanbouw en eiken accenten (bovenkasten keuken, open stelling, bed, lamellenwand, tafel).",
+  "base": "plans/vleugel.json",
+  "patches": [
+    {"op": "defineMaterial", "name": "tegelAntraciet", "def": {"label": "Antraciet tegel", "color": "#6b6c6e", "texture": "tile", "roughness": 0.35}},
+    {
+      "op": "palette",
+      "set": {
+        "frontBase": "antraciet",
+        "frontTall": "antraciet",
+        "frontUpper": "oak",
+        "frontGarage": "antraciet",
+        "frontUtility": "antraciet",
+        "wardrobe": "antraciet",
+        "accent": "oak",
+        "worktop": "zwartComposiet",
+        "backsplash": "tegelAntraciet",
+        "floorExtension": "betonDonker"
+      }
+    },
+    {
+      "op": "setMeta",
+      "set": {
+        "subtitle": "Scenario Donker & strak: antraciet matte fronten, zwart werkblad, eiken accenten",
+        "style": "Greeploze fronten in antraciet mat met zwarte details, zwart composiet werkblad, eiken accenten (bovenkasten, stelling, bed, lamellenwand) en een donkerdere gietvloer in de aanbouw."
+      }
+    }
+  ]
+}

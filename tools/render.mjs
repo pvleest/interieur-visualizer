@@ -9,6 +9,9 @@ const shots = [
   ['04-bijkeuken', 'view=bijkeuken&labels=0'],
   ['05-slaapkamer', 'view=slaapkamer&labels=0'],
   ['06-plattegrond-labels', 'view=plattegrond&labels=1'],
+  ['07-donker-strak-overzicht', 'scenario=donker-strak&view=overzicht&labels=0'],
+  ['08-donker-strak-keuken', 'scenario=donker-strak&view=keuken&labels=0'],
+  ['09-donker-strak-bijkeuken', 'scenario=donker-strak&view=bijkeuken&labels=0'],
 ].filter(s => !only || only.split(',').includes(s[0]));
 const browser = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const W = Number(process.env.W || 1600), H = Number(process.env.H || 1000);

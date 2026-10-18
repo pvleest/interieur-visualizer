@@ -1,0 +1,27 @@
+{
+  "format": "interieur-scenario",
+  "version": 1,
+  "id": "licht-warm",
+  "name": "Licht & warm",
+  "description": "Het basisontwerp: mat eiken en warm greige fronten, licht composiet werkblad, eiken plankenvloer in de keuken en een lichtgrijze gietvloer in de aanbouw.",
+  "base": "plans/vleugel.json",
+  "patches": [
+    {
+      "op": "palette",
+      "set": {
+        "frontBase": "greige",
+        "frontTall": "oak",
+        "frontUpper": "oak",
+        "frontGarage": "greige",
+        "frontUtility": "greige",
+        "wardrobe": "oak",
+        "accent": "oak",
+        "worktop": "composite",
+        "backsplash": "tile",
+        "floorKitchen": "planks",
+        "floorExtension": "concrete",
+        "floorGarage": "epoxy"
+      }
+    }
+  ]
+}

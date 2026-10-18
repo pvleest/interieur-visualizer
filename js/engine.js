@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { CSS2DObject } from '../vendor/addons/CSS2DRenderer.js';
 import { B, boxGeo } from './geometry.js';
-import { mat, materials } from './materials.js';
+import { mat, materials, setPlanMaterials } from './materials.js';
 import { buildItem } from './items.js';
 
 export const SCALE = 0.01; // config is in cm, world is in metres
@@ -141,6 +141,7 @@ function makeLabel(html, cls) {
 }
 
 export function buildPlan(plan) {
+  setPlanMaterials(plan.palette, plan.materials);
   const defaults = plan.defaults || {};
   const root = new THREE.Group();
   root.scale.setScalar(SCALE);

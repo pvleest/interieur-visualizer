@@ -19,12 +19,90 @@ The demo plan (`plans/vleugel.json`) is an interior design concept for a kitchen
 
 - Orbit **dollhouse view** with the ceilings off. Walls between the camera and the focus point are cut away automatically (toggle *Wanden: auto / laag / hoog*).
 - **Preset cameras** per room and a top-down **plan view**, all defined in the config.
-- **First-person walk mode** (*Rondlopen*): drag to look and use WASD or the arrow keys, or the on-screen pad on a phone. Simple collision keeps you inside the rooms and doorways, and the ceilings are shown.
+- **First-person walk mode** (*Rondlopen*): drag to look and use WASD or the arrow keys, or the on-screen pad on a phone. Walls block you except at doors, sliders and open passages; the closed garage door also blocks. The ceilings are shown in this mode.
+- **Scenarios**: design variants that you can save, share by link (any device), export and import, and compare A ⇄ B.
 - **Clickable labels** and objects show a details panel with the dimensions (w × d × h). Hovering shows a tooltip.
 - A side panel lists the design choices per room and a table of room and element dimensions.
 - Procedural materials (oak, warm greige matte fronts, composite worktop, poured concrete floor, epoxy, tiles, linen) with soft shadows and image-based lighting.
 - Responsive layout: on a phone the panel becomes a bottom sheet.
 - Headless render mode for high-quality stills: `?ui=0&view=keuken&labels=0&dpr=1`.
+
+## Scenarios (design variants)
+
+A **scenario** is the base plan plus an ordered list of patch operations (see *Patch format* below).
+
+- **Repo scenarios** live in `scenarios/*.json` and are listed in `scenarios/index.json`. Committing a new file and adding it to the index is enough to make it appear in the picker.
+- **Basisontwerp** is the base plan without patches. The repo ships two examples: *Licht & warm* and *Donker & strak*.
+- **Opslaan als nieuw scenario** saves the current state, including live edits, in `localStorage` on that device.
+- **Deel link** compresses the scenario with lz-string into the URL hash (`#s=…`). The link opens the identical design on any device without a server or account. On a phone the native share sheet is used.
+- **Exporteer / Importeer JSON** downloads or loads a scenario file in the same format as the repo files.
+- **Vergelijken**: pick a second scenario and toggle A ⇄ B with the button or the <kbd>C</kbd> key. The camera stays where it is, so you can compare the exact same view.
+
+Scenario file (`scenarios/donker-strak.json`):
+
+```json
+{
+  "format": "interieur-scenario", "version": 1,
+  "id": "donker-strak", "name": "Donker & strak",
+  "description": "Antraciet matte fronten, zwart werkblad, eiken accenten",
+  "base": "plans/vleugel.json",
+  "patches": [
+    { "op": "palette", "set": { "frontBase": "antraciet", "worktop": "zwartComposiet", "floorExtension": "betonDonker" } }
+  ]
+}
+```
+
+### Palette roles and material catalogue
+
+Items and rooms can reference a **palette role** instead of a fixed material: `"material": "@frontBase"`, `"floor": "@floorExtension"`. The base plan defines the roles in `palette`, and a scenario only needs to change the roles. Custom materials are defined in `materials`:
+
+```json
+"palette":   { "frontBase": "greige", "frontTall": "oak", "worktop": "composite", "floorExtension": "concrete" },
+"materials": { "antraciet": { "label": "Antraciet mat", "color": "#3b3d40", "roughness": 0.85 },
+               "betonDonker": { "label": "Donkere gietvloer", "color": "#6f6e6b", "texture": "concrete" } }
+```
+
+`texture` can be `oak`, `oakDark`, `planks`, `concrete`, `epoxy`, `composite`, `tile`, `linen` or `rug`. The colour multiplies the texture.
+
+These roles are used in `vleugel.json`: `frontBase`, `frontTall`, `frontUpper`, `frontGarage`, `frontUtility`, `wardrobe`, `accent`, `worktop`, `backsplash`, `floorKitchen`, `floorExtension`, `floorGarage`.
+
+## Edit API and patch format
+
+`window.viz.applyEdit(patch)` applies a patch to the current scenario and re-renders live. It returns `{ ok: true, ops }` or `{ ok: false, error }`; an invalid patch changes nothing. `window.viz.undo()` reverts the last `applyEdit` batch.
+
+The same patches are stored in scenarios, so a future natural-language chat front-end only needs to turn text into this JSON. The UI stub for that is the collapsed **Ontwerp aanpassen** panel in the *Scenario's* tab, which has palette pickers, a JSON patch box and a disabled chat field.
+
+A patch is a single operation, an array of operations, or `{ "ops": [...] }`. Every item has a stable `id` (see `plans/vleugel.json`).
+
+| op | Fields | Example |
+|---|---|---|
+| `palette` | `set: {role: material}` | `{"op":"palette","set":{"worktop":"zwartComposiet"}}` |
+| `defineMaterial` | `name`, `def: {label,color,roughness,metalness,texture}` | `{"op":"defineMaterial","name":"salie","def":{"color":"#9aa38e"}}` |
+| `updateItem` | `id`, `set` (shallow merge; `null` deletes a key) | `{"op":"updateItem","id":"keuken-koelkast","set":{"material":"salie"}}` |
+| `moveItem` | `id`, `pos: [x,z]` or `by: [dx,dz]`, optional `rot`, `elev` | `{"op":"moveItem","id":"keuken-ronde-tafel-80","by":[0,-20]}` |
+| `resizeItem` | `id`, `size: [w,d,h]` | `{"op":"resizeItem","id":"slaapkamer-bed-160-210","size":[180,210,58]}` |
+| `addItem` | `item` (full item spec; `id` optional, made unique) | `{"op":"addItem","item":{"type":"plant","room":"slaapkamer","pos":[-740,290],"size":[40,40,110]}}` |
+| `removeItem` | `id` | `{"op":"removeItem","id":"bijkeuken-plant"}` |
+| `updateRoom` | `id`, `set` (e.g. `floor`, `notes`, `name`) | `{"op":"updateRoom","id":"keuken","set":{"floor":"terrazzo"}}` |
+| `updateWall` | `id`, `set` (e.g. `thickness`, `height`, `from`, `to`) | `{"op":"updateWall","id":"keuken-oost","set":{"height":240}}` |
+| `addOpening` | `wall`, `opening` | `{"op":"addOpening","wall":"aanbouw-noord","opening":{"type":"window","offset":500,"width":100,"sill":90,"height":120}}` |
+| `updateOpening` | `wall`, `index` (or opening `id`), `set` | `{"op":"updateOpening","wall":"keuken-gevel","index":0,"set":{"sill":60}}` |
+| `removeOpening` | `wall`, `index` | `{"op":"removeOpening","wall":"garage-keuken","index":0}` |
+| `setMeta` | `set` (title, subtitle, style) | `{"op":"setMeta","set":{"subtitle":"Variant B"}}` |
+| `setView` | `id`, `view` | `{"op":"setView","id":"keuken","view":{"label":"Keuken","pos":[470,560,1010],"target":[370,70,470]}}` |
+
+Other helpers on `window.viz`:
+- `getScenario()` and `getPlan()`
+- `loadScenario(key)` and `listScenarios()`
+- `shareUrl()`
+- for tests: `startWalk(room)`, `tryMove(dx,dz)`, `position()` and `setPose(x,z,yaw)`
+
+## Tests
+
+```bash
+python3 -m http.server 8765 &
+node tools/test.mjs http://localhost:8765/   # walk keuken→garage→bijkeuken→slaapkamer, openings, walls, scenarios, share link
+```
 
 ## URL parameters
 
@@ -36,6 +114,8 @@ The demo plan (`plans/vleugel.json`) is an interior design concept for a kitchen
 | `labels` | `0` | Start with labels hidden. |
 | `labelroom` | `*` | Show item labels for all rooms (default: only the room in focus). |
 | `dpr` | `2` | Force a device pixel ratio. |
+| `scenario` | `donker-strak` | Open a repo scenario. |
+| `#s=…` | (hash) | Shared scenario, created by *Deel link*. |
 
 ## Config format (`plans/*.json`)
 
@@ -143,6 +223,11 @@ Een eenvoudige, data-gedreven **3D-interieurvisualizer** die in de browser draai
 - **Keuken, Garage, Bijkeuken, Slaapkamer**: een vaste camera per ruimte.
 - **Rondlopen**: slepen om rond te kijken, en W, A, S, D, de pijltjes of de knoppen op je telefoon om te lopen.
 - Klik op een element of label voor de maten en een toelichting. In het paneel staan de ontwerpkeuzes per ruimte en een maattabel.
+
+**Scenario's**: kies een variant (Basisontwerp, Licht & warm, Donker & strak) of maak je eigen variant via *Ontwerp aanpassen*.
+- *Opslaan als nieuw scenario* bewaart de variant op het apparaat.
+- *Deel link* maakt een link waarin het hele scenario gecomprimeerd zit. Die link opent precies hetzelfde ontwerp op een andere telefoon of laptop.
+- Met *Vergelijken* en de toets C wissel je snel tussen twee scenario's.
 
 Voor een nieuw ontwerp kopieer je `plans/vleugel.json`, pas je de maten en de inrichting aan, en open je `index.html?plan=plans/<nieuw>.json`.
 
