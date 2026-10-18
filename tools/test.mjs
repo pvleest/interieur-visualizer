@@ -41,33 +41,89 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
 {
   const { page, errs } = await open(base);
   // 1. scripted walk keuken -> garage -> bijkeuken -> slaapkamer
-  const r = await WALK(page, [430, 610], [[235, 460], [235, 250], [100, 212], [-100, 212], [-200, 248], [-420, 248], [-560, 200]]);
+  const r = await WALK(page, [475, 610], [[280, 460], [280, 250], [100, 252], [-100, 252], [-200, 322], [-420, 322], [-560, 250]]);
   console.log('  visited:', r.visited.join(' -> '), ' end:', JSON.stringify(r.end));
   check(JSON.stringify(r.visited) === JSON.stringify(['keuken', 'garage', 'bijkeuken', 'slaapkamer']), 'walk path visits keuken -> garage -> bijkeuken -> slaapkamer');
-  check(Math.hypot(r.end.x + 560, r.end.z - 200) < 5, 'walk reaches the target point in the bedroom');
+  check(Math.hypot(r.end.x + 560, r.end.z - 250) < 5, 'walk reaches the target point in the bedroom');
   // and back again
-  const back = await WALK(page, [-560, 200], [[-420, 248], [-200, 248], [-100, 212], [100, 212], [235, 250], [235, 460], [430, 610]]);
+  const back = await WALK(page, [-560, 250], [[-420, 322], [-200, 322], [-100, 252], [100, 252], [280, 250], [280, 460], [475, 610]]);
   check(JSON.stringify(back.visited) === JSON.stringify(['slaapkamer', 'bijkeuken', 'garage', 'keuken']), 'walk back slaapkamer -> keuken (' + back.visited.join(' -> ') + ')');
   // 2. exterior / living-room openings
-  const living = await WALK(page, [520, 600], [[520, 760]]);
+  const living = await WALK(page, [590, 600], [[590, 760]]);
   check(living.end.z > 740, 'keuken -> woonkamer opening is walkable');
-  const slider = await WALK(page, [-170, 250], [[-170, 420]]);
-  check(slider.end.z > 400, 'bijkeuken schuifpui is walkable');
-  const gdoor = await WALK(page, [-485, 250], [[-485, 420]]);
-  check(gdoor.end.z > 400, 'slaapkamer tuindeur is walkable');
+  const slider = await WALK(page, [-150, 330], [[-150, 480]]);
+  check(slider.end.z > 460, 'bijkeuken schuifpui is walkable');
+  const gdoor = await WALK(page, [-440, 330], [[-440, 480]]);
+  check(gdoor.end.z > 460, 'slaapkamer tuindeur is walkable');
+  const entree = await WALK(page, [75, 250], [[75, 380]]);
+  check(entree.end.z > 360, 'entreedeur garage (90 cm) is walkable');
+  const raam = await WALK(page, [-616, 330], [[-616, 480]]);
+  check(raam.end.z < 380, 'slaapkamer raam tot de vloer blocks (z=' + raam.end.z.toFixed(0) + ')');
   // 3. walls still block
   const wall = await WALK(page, [400, 200], [[400, -200]]);
   check(wall.end.z > 0, 'garage north wall blocks (z=' + wall.end.z.toFixed(0) + ')');
-  const wall2 = await WALK(page, [450, 450], [[450, 200]]);
+  const wall2 = await WALK(page, [480, 450], [[480, 200]]);
   check(wall2.end.z > 330, 'kitchen-garage wall blocks outside the door (z=' + wall2.end.z.toFixed(0) + ')');
   // 4. real keyboard: from the kitchen, facing north (yaw 0), hold W
-  await page.evaluate(() => window.viz.setPose(235, 470, 0));
+  // A/D strafe: facing north (yaw 0), A must go west (-x) and D east (+x)
+  for (const [key, sign, label] of [['KeyA', -1, 'A strafes left'], ['KeyD', 1, 'D strafes right']]) {
+    await page.evaluate(() => window.viz.setPose(-560, 250, 0));
+    await page.keyboard.down(key);
+    await page.waitForFunction(() => Math.abs(window.viz.position().x + 560) > 15, null, { timeout: 20000 }).catch(() => {});
+    await page.keyboard.up(key);
+    const p = await page.evaluate(() => window.viz.position());
+    check(Math.sign(p.x + 560) === sign && Math.abs(p.z - 250) < 3, `${label} (dx=${(p.x + 560).toFixed(0)}, dz=${(p.z - 250).toFixed(0)})`);
+  }
+  // facing east (yaw -90): A must go north (-z)
+  await page.evaluate(() => window.viz.setPose(-560, 250, -90));
+  await page.keyboard.down('KeyA');
+  await page.waitForFunction(() => Math.abs(window.viz.position().z - 250) > 15, null, { timeout: 20000 }).catch(() => {});
+  await page.keyboard.up('KeyA');
+  const pe = await page.evaluate(() => window.viz.position());
+  check(pe.z < 250 && Math.abs(pe.x + 560) < 3, 'facing east, A strafes north/left (dz=' + (pe.z - 250).toFixed(0) + ')');
+  // on-screen pad: ⟲ turns left (yaw increases => forward rotates towards west)
+  await page.evaluate(() => window.viz.setPose(-560, 250, 0));
+  await page.dispatchEvent('#walkpad button[data-k="left"]', 'pointerdown');
+  await page.waitForTimeout(800);
+  await page.dispatchEvent('#walkpad button[data-k="left"]', 'pointerup');
+  const yl = await page.evaluate(() => window.viz.position().yaw);
+  check(yl > 5, 'pad ⟲ turns left (yaw=' + yl.toFixed(0) + ')');
+  await page.evaluate(() => window.viz.setPose(-560, 250, 0));
+  await page.dispatchEvent('#walkpad button[data-k="fwd"]', 'pointerdown');
+  await page.waitForFunction(() => window.viz.position().z < 235, null, { timeout: 20000 }).catch(() => {});
+  await page.dispatchEvent('#walkpad button[data-k="fwd"]', 'pointerup');
+  const pf = await page.evaluate(() => window.viz.position());
+  check(pf.z < 240, 'pad ▲ walks forward (dz=' + (pf.z - 250).toFixed(0) + ')');
+
+  await page.evaluate(() => window.viz.setPose(280, 470, 0));
   await page.keyboard.down('KeyW');
   await page.waitForFunction(() => window.viz.position().room === 'garage' && window.viz.position().z < 280, null, { timeout: 30000 }).catch(() => {});
   await page.keyboard.up('KeyW');
   const kp = await page.evaluate(() => window.viz.position());
   check(kp.room === 'garage', 'keyboard W walks from kitchen into garage (room=' + kp.room + ', z=' + kp.z.toFixed(0) + ')');
   await page.evaluate(() => window.viz.stopWalk());
+
+  // 4b. every furniture footprint lies inside its room, for the base plan and every scenario
+  const fit = await page.evaluate(async () => {
+    const out = [];
+    for (const sc of window.viz.listScenarios()) {
+      await window.viz.loadScenario(sc.key);
+      const plan = window.viz.getPlan();
+      for (const it of plan.items) {
+        if (!it.room || !it.size || it.type === 'walkway' || it.type === 'wallLight') continue;
+        const r = plan.rooms.find((x) => x.id === it.room);
+        const xs = r.polygon.map((p) => p[0]), zs = r.polygon.map((p) => p[1]);
+        const a = ((it.rot || 0) * Math.PI) / 180, w = it.size[0], d = it.size[1] || 0;
+        const hw = (Math.abs(Math.cos(a)) * w + Math.abs(Math.sin(a)) * d) / 2, hd = (Math.abs(Math.sin(a)) * w + Math.abs(Math.cos(a)) * d) / 2;
+        let [x, z] = it.pos; const tol = 2.5;
+        if (it.type === 'rail') { x += (Math.sin(a) * d) / 2; z += (Math.cos(a) * d) / 2; } // rail origin sits at the wall, depth extends forward
+        if (x - hw < Math.min(...xs) - tol || x + hw > Math.max(...xs) + tol || z - hd < Math.min(...zs) - tol || z + hd > Math.max(...zs) + tol) out.push(`${sc.name}: ${it.id}`);
+      }
+    }
+    await window.viz.loadScenario('base');
+    return out;
+  });
+  check(fit.length === 0, 'all items fit inside their rooms in every scenario ' + (fit.length ? JSON.stringify(fit) : ''));
 
   // 5. scenarios + edit API
   const list = await page.evaluate(() => window.viz.listScenarios().map((s) => s.name));
@@ -78,7 +134,7 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   const e1 = await page.evaluate(() => window.viz.applyEdit({ op: 'moveItem', id: 'keuken-ronde-tafel-80', by: [0, -20] }));
   const tpos = await page.evaluate(() => window.viz.getPlan().items.find((i) => i.id === 'keuken-ronde-tafel-80').pos);
   check(e1.ok && tpos[1] === 555, 'applyEdit moveItem works (pos ' + tpos + ')');
-  const e2 = await page.evaluate(() => window.viz.applyEdit([{ op: 'removeItem', id: 'bijkeuken-plant' }, { op: 'addItem', item: { id: 'slaapkamer-plant', type: 'plant', room: 'slaapkamer', pos: [-740, 290], size: [40, 40, 110] } }, { op: 'updateOpening', wall: 'keuken-gevel', index: 0, set: { sill: 60 } }]));
+  const e2 = await page.evaluate(() => window.viz.applyEdit([{ op: 'removeItem', id: 'bijkeuken-plant' }, { op: 'addItem', item: { id: 'slaapkamer-plant', type: 'plant', room: 'slaapkamer', pos: [-740, 365], size: [40, 40, 110] } }, { op: 'updateOpening', wall: 'keuken-gevel', index: 0, set: { sill: 60 } }]));
   check(e2.ok, 'applyEdit batch (remove/add item, update opening)');
   const e3 = await page.evaluate(() => window.viz.applyEdit({ op: 'explode' }));
   check(!e3.ok && /onbekende operatie/.test(e3.error), 'invalid op is rejected: ' + e3.error.slice(0, 60));

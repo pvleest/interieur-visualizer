@@ -19,7 +19,7 @@ The demo plan (`plans/vleugel.json`) is an interior design concept for a kitchen
 
 - Orbit **dollhouse view** with the ceilings off. Walls between the camera and the focus point are cut away automatically (toggle *Wanden: auto / laag / hoog*).
 - **Preset cameras** per room and a top-down **plan view**, all defined in the config.
-- **First-person walk mode** (*Rondlopen*): drag to look and use WASD or the arrow keys, or the on-screen pad on a phone. Walls block you except at doors, sliders and open passages; the closed garage door also blocks. The ceilings are shown in this mode.
+- **First-person walk mode** (*Rondlopen*): drag to look; W/S walk forward and back, A/D strafe left and right, and ←/→ (or Q/E) turn. On a phone, use the on-screen pad (⟲ turn left, ▲ forward, ⟳ turn right, ▼ back). Walls block you except at doors, sliders and open passages; the closed garage door also blocks. The ceilings are shown in this mode.
 - **Scenarios**: design variants that you can save, share by link (any device), export and import, and compare A ⇄ B.
 - **Clickable labels** and objects show a details panel with the dimensions (w × d × h). Hovering shows a tooltip.
 - A side panel lists the design choices per room and a table of room and element dimensions.
@@ -97,11 +97,21 @@ Other helpers on `window.viz`:
 - `shareUrl()`
 - for tests: `startWalk(room)`, `tryMove(dx,dz)`, `position()` and `setPose(x,z,yaw)`
 
+## Geometry notes (from the detailed drawing)
+
+All dimensions are in cm. x points east and z points south. The origin is the inner face of the garage's west wall, at its north side.
+
+- **Bedroom facade**, measured from the inner face of the west wall: 87 wall, then **104 floor-length window** (fixed), then 71.571 wall, then **104 glazed garden door**, then about 21 to the partition.
+- **Bijkeuken facade**: 140 wall (from the garden door, across the partition), then a **198 sliding door**, then about 20 to the garage wall.
+- **Entrance**: the extension facade sits **66** further south than the garage. In the **135**-wide niche between the extension and the kitchen there is a **90 glazed door** in the garage's south wall.
+- **Kitchen**: a **292 facade window**, a 90 door to the garage, and an opening of about 106 to the living room. The living room and the rest of the house are context areas only.
+- The garage–bijkeuken door is at garage z 210–295. The garage's sectional door stays closed in walk mode; to make it walkable, add `garage` to `PASSABLE` in `js/app.js`.
+
 ## Tests
 
 ```bash
 python3 -m http.server 8765 &
-node tools/test.mjs http://localhost:8765/   # walk keuken→garage→bijkeuken→slaapkamer, openings, walls, scenarios, share link
+node tools/test.mjs http://localhost:8765/   # walk keuken→garage→bijkeuken→slaapkamer, openings, walls, A/D strafe + phone pad, furniture fit, scenarios, share link
 ```
 
 ## URL parameters
@@ -221,7 +231,7 @@ Een eenvoudige, data-gedreven **3D-interieurvisualizer** die in de browser draai
 - **Overzicht**: een poppenhuisweergave van de hele vleugel, waarbij de wanden die in de weg staan automatisch omlaag gaan.
 - **Plattegrond**: een bovenaanzicht met alle labels.
 - **Keuken, Garage, Bijkeuken, Slaapkamer**: een vaste camera per ruimte.
-- **Rondlopen**: slepen om rond te kijken, en W, A, S, D, de pijltjes of de knoppen op je telefoon om te lopen.
+- **Rondlopen**: slepen om rond te kijken, en W/S vooruit en achteruit, A/D opzij naar links en rechts, ←/→ draaien, of de knoppen op je telefoon.
 - Klik op een element of label voor de maten en een toelichting. In het paneel staan de ontwerpkeuzes per ruimte en een maattabel.
 
 **Scenario's**: kies een variant (Basisontwerp, Licht & warm, Donker & strak) of maak je eigen variant via *Ontwerp aanpassen*.

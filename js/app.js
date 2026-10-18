@@ -501,7 +501,8 @@ function updateWalk(dt) {
   const side = new THREE.Vector2(-fwd.y, fwd.x);
   const mv = new THREE.Vector2();
   if (k.fwd) mv.add(fwd); if (k.back) mv.sub(fwd);
-  if (k.sr) mv.sub(side); if (k.sl) mv.add(side);
+  // side = camera's right-hand direction: D (sr) strafes right, A (sl) strafes left
+  if (k.sr) mv.add(side); if (k.sl) mv.sub(side);
   if (mv.lengthSq() > 0) {
     mv.normalize().multiplyScalar(speed / SCALE);
     // sub-step so fast frames cannot tunnel through thin walls
@@ -754,7 +755,7 @@ window.viz = {
   startWalk: (room) => startWalk(room), stopWalk: () => stopWalk(),
   tryMove, roomAt, walkable,
   setPose: (x, z, yawDeg = 0) => { camera.position.x = x * SCALE; camera.position.z = z * SCALE; walk.yaw = THREE.MathUtils.degToRad(yawDeg); walk.pitch = 0; },
-  position: () => ({ x: camera.position.x / SCALE, z: camera.position.z / SCALE, room: roomAt(camera.position.x / SCALE, camera.position.z / SCALE) }),
+  position: () => ({ x: camera.position.x / SCALE, z: camera.position.z / SCALE, yaw: THREE.MathUtils.radToDeg(walk.yaw), room: roomAt(camera.position.x / SCALE, camera.position.z / SCALE) }),
 };
 
 init().catch((e) => { console.error(e); $('#loading').innerHTML = '<span>Kon het model niet laden: ' + e.message + '</span>'; });
