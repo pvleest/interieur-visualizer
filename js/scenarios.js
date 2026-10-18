@@ -63,6 +63,12 @@ export const OPS = {
   removeItem: (plan, p) => { findItem(plan, p.id); plan.items = plan.items.filter((i) => i.id !== p.id); },
   updateRoom: (plan, p) => { const r = plan.rooms.find((x) => x.id === p.id); need(r, `Onbekende ruimte: "${p.id}"`); merge(r, p.set); },
   updateWall: (plan, p) => merge(findWall(plan, p.id), p.set),
+  addWall: (plan, p) => {
+    need(p.wall && p.wall.id && Array.isArray(p.wall.from) && Array.isArray(p.wall.to), 'addWall: "wall" met "id", "from" en "to" is verplicht');
+    need(!plan.walls.some((w) => w.id === p.wall.id), `addWall: wand "${p.wall.id}" bestaat al`);
+    plan.walls.push(clone(p.wall));
+  },
+  removeWall: (plan, p) => { findWall(plan, p.id); plan.walls = plan.walls.filter((w) => w.id !== p.id); },
   addOpening: (plan, p) => { need(p.opening, 'addOpening: "opening" ontbreekt'); (findWall(plan, p.wall).openings ||= []).push(clone(p.opening)); },
   updateOpening: (plan, p) => { const w = findWall(plan, p.wall); merge(w.openings[findOpening(w, p.index ?? p.opening)], p.set); },
   removeOpening: (plan, p) => { const w = findWall(plan, p.wall); w.openings.splice(findOpening(w, p.index ?? p.opening), 1); },

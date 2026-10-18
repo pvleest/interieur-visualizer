@@ -1,0 +1,174 @@
+{
+  "format": "interieur-scenario",
+  "version": 1,
+  "id": "slaapkamer-inloopkast",
+  "name": "Slaapkamer met inloopkast",
+  "description": "Een nieuwe wand achter het hoofdbord maakt een inloopkast langs de buitenmuur, met 220 cm kastruimte, een ladekast en een passpiegel. Het bed kijkt nu naar de tuindeur. In de garage komen een werkbank van 220 cm en een plek voor twee fietsen. Nadelen: het bed is maar aan één kant echt toegankelijk, de inbouwkast tegen de bijkeuken vervalt (een akoestische lamellenwand vangt het geluid deels op), en er is minder gesloten opslag in de garage (480 in plaats van 540 cm).",
+  "base": "plans/vleugel.json",
+  "patches": [
+    {"op": "setMeta", "set": {"subtitle": "Indeling: slaapkamer met inloopkast achter het hoofdbord, garage met werkbank en fietsenplek"}},
+    {"op": "addWall", "wall": {"id": "kleedkamer-wand", "from": [-610, 74.6], "to": [-610, 307], "thickness": 10}},
+    {"op": "removeItem", "id": "slaapkamer-inbouwkast"},
+    {"op": "removeItem", "id": "slaapkamer-wall"},
+    {"op": "moveItem", "id": "slaapkamer-bed-160-210", "pos": [-497, 190.8]},
+    {
+      "op": "updateItem",
+      "id": "slaapkamer-bed-160-210",
+      "set": {"note": "Bed met het hoofdbord tegen de nieuwe kleedkamerwand; het voeteneinde kijkt naar de tuindeur."}
+    },
+    {"op": "moveItem", "id": "slaapkamer-slatpanel", "pos": [-603.5, 190.8]},
+    {"op": "resizeItem", "id": "slaapkamer-slatpanel", "size": [232.4, 3, 125]},
+    {
+      "op": "updateItem",
+      "id": "slaapkamer-slatpanel",
+      "set": {
+        "label": "Hoofdbordwand (kleedkamer erachter)",
+        "labelHeight": 150,
+        "note": "Eiken lamellen op de nieuwe wand van 10 cm; achter deze wand zit de inloopkast."
+      }
+    },
+    {"op": "moveItem", "id": "slaapkamer-zwevend-nachtkastje", "pos": [-582, 92]},
+    {"op": "resizeItem", "id": "slaapkamer-zwevend-nachtkastje", "size": [30, 40, 28]},
+    {"op": "moveItem", "id": "slaapkamer-nightstand", "pos": [-582, 289]},
+    {"op": "resizeItem", "id": "slaapkamer-nightstand", "size": [30, 40, 28]},
+    {"op": "moveItem", "id": "slaapkamer-wandlampje", "pos": [-602, 92]},
+    {"op": "moveItem", "id": "slaapkamer-walllight", "pos": [-602, 289]},
+    {"op": "moveItem", "id": "slaapkamer-vloerkleed-240-300", "pos": [-485, 190.8]},
+    {"op": "resizeItem", "id": "slaapkamer-vloerkleed-240-300", "size": [200, 230, 1]},
+    {"op": "updateItem", "id": "slaapkamer-vloerkleed-240-300", "set": {"label": "Vloerkleed 200 × 230"}},
+    {
+      "op": "addItem",
+      "item": {
+        "id": "slaapkamer-inloop-kastenwand",
+        "type": "wardrobe",
+        "room": "slaapkamer",
+        "pos": [-725, 185],
+        "rot": 90,
+        "size": [220, 60, 255],
+        "rows": [{"cols": 4}, {"h": 45, "cols": 4}],
+        "material": "@wardrobe",
+        "label": "Inloopkast: kastenwand 220 cm",
+        "labelHeight": 270,
+        "note": "Kastenwand tot het plafond langs de buitenmuur, met 80 cm loopruimte ervoor."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "slaapkamer-inloop-ladekast",
+        "type": "base",
+        "room": "slaapkamer",
+        "pos": [-655, 99.6],
+        "size": [80, 50, 90],
+        "drawers": 4,
+        "material": "@wardrobe",
+        "label": "Ladekast",
+        "labelHeight": 110
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "slaapkamer-inloop-spiegel",
+        "type": "panel",
+        "room": "slaapkamer",
+        "pos": [-615.5, 230],
+        "rot": 90,
+        "elev": 20,
+        "size": [70, 1, 180],
+        "material": {"label": "Spiegel", "color": "#d9e0e2", "roughness": 0.04, "metalness": 0.95},
+        "label": "Passpiegel",
+        "labelHeight": 170
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "slaapkamer-akoestiek",
+        "type": "slatPanel",
+        "room": "slaapkamer",
+        "pos": [-368.5, 174.6],
+        "rot": -90,
+        "size": [200, 3, 240],
+        "material": "@accent",
+        "label": "Akoestische lamellenwand",
+        "labelHeight": 200,
+        "note": "Vilt met eiken lamellen tegen de bijkeukenwand, voor geluidsdemping nu de inbouwkast daar weg is."
+      }
+    },
+    {"op": "moveItem", "id": "garage-hoge-kastenwand-2", "pos": [465, 30]},
+    {"op": "resizeItem", "id": "garage-hoge-kastenwand-2", "size": [240, 60, 235]},
+    {
+      "op": "updateItem",
+      "id": "garage-hoge-kastenwand-2",
+      "set": {"rows": [{"cols": 4}, {"h": 45, "cols": 4}], "note": "4 gesloten kasten tot het plafond."}
+    },
+    {"op": "moveItem", "id": "garage-gereedschapsnis-gaatjesbord", "pos": [695, 30]},
+    {"op": "resizeItem", "id": "garage-gereedschapsnis-gaatjesbord", "size": [220, 60, 235]},
+    {
+      "op": "updateItem",
+      "id": "garage-gereedschapsnis-gaatjesbord",
+      "set": {
+        "label": "Werkbank 220 cm + gaatjesbord",
+        "note": "Werkbank van 220 cm op 92 cm hoogte met ladeblok, gaatjesbord en bovenkast met LED; dicht bij de garagedeur."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "garage-fiets-1",
+        "type": "bike",
+        "room": "garage",
+        "pos": [465, 281],
+        "size": [180, 58, 105],
+        "color": "#2f3b35",
+        "label": "Fietsenplek (2 fietsen)",
+        "labelHeight": 125,
+        "note": "Twee fietsen in wandbeugels langs de keukenmuur, met een vrije route naar de garagedeur."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {"id": "garage-fiets-2", "type": "bike", "room": "garage", "pos": [675, 281], "size": [180, 58, 105], "color": "#7a4b3a"}
+    },
+    {"op": "setView", "id": "overzicht", "view": {"label": "Overzicht", "pos": [420, 1500, 1050], "target": [60, 0, 230]}},
+    {
+      "op": "setView",
+      "id": "slaapkamer",
+      "view": {"label": "Slaapkamer", "pos": [-520, 760, 720], "target": [-575, 40, 210], "walk": {"pos": [-460, 330], "yaw": 80}}
+    },
+    {
+      "op": "updateRoom",
+      "id": "slaapkamer",
+      "set": {
+        "notes": [
+          "Nieuwe wand van 10 cm, 145 cm uit de buitenmuur: daarachter een inloopkast met een kastenwand van 220 cm, een ladekast en een passpiegel.",
+          "Je loopt de inloopkast in langs het raam tot de vloer; het raam geeft daglicht in de kast en in de slaapkamer.",
+          "Het bed staat met het hoofdbord tegen de lamellenwand en het voeteneinde naar de tuindeur.",
+          "De inbouwkast tegen de bijkeuken vervalt; een akoestische lamellenwand neemt de geluidsdemping over.",
+          "Aan de raamkant van het bed is 106 cm vrij; aan de andere kant passen alleen een smal zwevend nachtkastje en een korte doorgang."
+        ]
+      }
+    },
+    {
+      "op": "setView",
+      "id": "garage",
+      "view": {"label": "Garage", "pos": [250, 430, 310], "target": [680, 60, 120], "walk": {"pos": [760, 200], "yaw": 90}}
+    },
+    {
+      "op": "updateRoom",
+      "id": "garage",
+      "set": {
+        "notes": [
+          "Hoge kastenwand over 480 cm (2 × 4 kasten) plus de open stelling voor kratten.",
+          "Werkbank van 220 cm met gaatjesbord dicht bij de garagedeur.",
+          "Fietsenplek voor twee fietsen in wandbeugels langs de keukenmuur, met een vrije route naar de garagedeur.",
+          "Het looppad van 120 cm tussen keukendeur, entreedeur en bijkeuken blijft vrij."
+        ]
+      }
+    }
+  ],
+  "checks": {
+    "route": [[300, 450], [280, 380], [280, 250], [100, 252], [-100, 252], [-200, 305], [-420, 322], [-420, 340], [-560, 342], [-660, 342], [-660, 200]]
+  }
+}

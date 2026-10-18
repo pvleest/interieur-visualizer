@@ -1,0 +1,181 @@
+{
+  "format": "interieur-scenario",
+  "version": 1,
+  "id": "pantry-garage",
+  "name": "Pantry in de garage",
+  "description": "Koelkast, vriezer en voorraadkast verhuizen naar een pantry-zone in de garage, direct naast de keukendeur. Daardoor wordt de keuken een U met 215 cm extra werkblad en een koffiehoek, en blijft de kastenwand in de garage helemaal staan. Nadelen: je loopt voor de koelkast even de garage in, de apparaten moeten geschikt zijn voor een onverwarmde ruimte (klimaatklasse SN-T), en de vrije vloer in de garage wordt 191 cm breed in plaats van 251 cm.",
+  "base": "plans/vleugel.json",
+  "patches": [
+    {"op": "setMeta", "set": {"subtitle": "Indeling: pantry in de garage, U-keuken met langere werkbladen"}},
+    {"op": "removeItem", "id": "keuken-koelkast"},
+    {"op": "removeItem", "id": "keuken-vriezer"},
+    {"op": "removeItem", "id": "keuken-voorraadkast"},
+    {"op": "moveItem", "id": "keuken-oven-magnetron", "pos": [195, 375]},
+    {"op": "updateItem", "id": "keuken-oven-magnetron", "set": {"note": "Oven + combimagnetron als enige hoge kast, naast de deur naar de garage."}},
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-west-1",
+        "type": "base",
+        "room": "keuken",
+        "pos": [195, 435],
+        "rot": 90,
+        "size": [60, 60, 88],
+        "drawers": 3,
+        "material": "@frontBase",
+        "note": "Ladekast voor bestek en bakspullen."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-west-2",
+        "type": "base",
+        "room": "keuken",
+        "pos": [195, 495],
+        "rot": 90,
+        "size": [60, 60, 88],
+        "doors": 1,
+        "material": "@frontBase",
+        "label": "Koffiehoek",
+        "labelHeight": 125,
+        "note": "Koffiehoek met apparaten op het werkblad en kopjes in de bovenkast."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-west-3",
+        "type": "base",
+        "room": "keuken",
+        "pos": [195, 572.5],
+        "rot": 90,
+        "size": [95, 60, 88],
+        "drawers": 3,
+        "material": "@frontBase",
+        "note": "Brede ladekast."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-west-blad",
+        "type": "worktop",
+        "room": "keuken",
+        "pos": [196, 512.5],
+        "rot": 90,
+        "elev": 88,
+        "size": [215, 62, 4],
+        "material": "@worktop",
+        "label": "Extra werkblad 215 cm (U-vorm)",
+        "labelHeight": 120
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-west-achterwand",
+        "type": "panel",
+        "room": "keuken",
+        "pos": [165.75, 512.5],
+        "rot": 90,
+        "elev": 92,
+        "size": [215, 1.5, 63],
+        "material": "@backsplash"
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-west-bovenkast",
+        "type": "wall",
+        "room": "keuken",
+        "pos": [182.5, 512.5],
+        "rot": 90,
+        "elev": 155,
+        "size": [215, 35, 75],
+        "doors": 4,
+        "material": "@frontUpper"
+      }
+    },
+    {"op": "moveItem", "id": "keuken-ronde-tafel-80", "pos": [420, 545]},
+    {"op": "moveItem", "id": "keuken-chair-1", "pos": [372, 545]},
+    {"op": "moveItem", "id": "keuken-chair-2", "pos": [468, 545]},
+    {"op": "moveItem", "id": "keuken-pendant", "pos": [420, 545]},
+    {
+      "op": "addItem",
+      "item": {
+        "id": "garage-pantry-koelkast",
+        "type": "fridge",
+        "room": "garage",
+        "pos": [375, 281],
+        "rot": 180,
+        "size": [60, 60, 235],
+        "material": "@frontTall",
+        "label": "Pantry: koelkast + vriezer",
+        "labelHeight": 250,
+        "note": "Grote koelkast (178 cm) en aparte vriezer in klimaatklasse SN-T, direct naast de keukendeur."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "garage-pantry-vriezer",
+        "type": "freezer",
+        "room": "garage",
+        "pos": [435, 281],
+        "rot": 180,
+        "size": [60, 60, 235],
+        "material": "@frontTall"
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "garage-pantry-voorraad",
+        "type": "tall",
+        "room": "garage",
+        "pos": [515, 281],
+        "rot": 180,
+        "size": [100, 60, 235],
+        "rows": [{"cols": 2}, {"h": 45, "cols": 2}],
+        "material": "@frontTall",
+        "label": "Voorraadkast",
+        "labelHeight": 250,
+        "note": "Voorraadkast met binnenladen voor blik, drank en bulk."
+      }
+    },
+    {"op": "addItem", "item": {"id": "garage-pantry-led", "type": "ledStrip", "room": "garage", "pos": [455, 245], "elev": 238, "size": [220, 3]}},
+    {
+      "op": "setView",
+      "id": "pantry",
+      "view": {"label": "Pantry", "pos": [780, 620, -70], "target": [400, 40, 300], "walk": {"pos": [300, 200], "yaw": -120}}
+    },
+    {"op": "setView", "id": "overzicht", "view": {"label": "Overzicht", "pos": [420, 1500, 1050], "target": [60, 0, 230]}},
+    {
+      "op": "updateRoom",
+      "id": "keuken",
+      "set": {
+        "notes": [
+          "U-keuken: een extra werkblad van 215 cm langs de linkerwand, met een koffiehoek en bovenkasten.",
+          "Alleen de oven + combimagnetron blijft als hoge kast, naast de deur naar de garage.",
+          "Koelkast, vriezer en voorraad staan in de garage, vier stappen van de keukendeur.",
+          "De ronde tafel voor twee staat midden in de U, met 96 tot 123 cm loopruimte rondom."
+        ]
+      }
+    },
+    {
+      "op": "updateRoom",
+      "id": "garage",
+      "set": {
+        "notes": [
+          "Pantry-zone direct rechts van de keukendeur: grote koelkast en aparte vriezer (SN-T, geschikt voor 10–43 °C) plus een voorraadkast van 100 cm, in eiken fronten.",
+          "De hoge kastenwand over de lange wand blijft helemaal staan.",
+          "Het looppad van 120 cm tussen keukendeur, entreedeur en bijkeuken blijft vrij; de pantry begint net daarnaast.",
+          "Tussen de pantry en de kastenwand blijft 191 cm vrije vloer over."
+        ]
+      }
+    }
+  ],
+  "checks": {"route": [[300, 450], [280, 380], [280, 250], [100, 252], [-100, 252], [-200, 305], [-420, 322], [-420, 330], [-500, 330], [-500, 240]]}
+}

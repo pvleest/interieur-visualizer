@@ -1,6 +1,10 @@
 {
   "scenarios": [
-    {"id": "licht-warm", "name": "Licht & warm", "file": "scenarios/licht-warm.json"},
-    {"id": "donker-strak", "name": "Donker & strak", "file": "scenarios/donker-strak.json"}
+    {"id": "licht-warm", "name": "Licht & warm", "group": "Kleurvarianten", "file": "scenarios/licht-warm.json"},
+    {"id": "donker-strak", "name": "Donker & strak", "group": "Kleurvarianten", "file": "scenarios/donker-strak.json"},
+    {"id": "kookeiland", "name": "Kookeiland", "group": "Indelingen", "file": "scenarios/kookeiland.json"},
+    {"id": "pantry-garage", "name": "Pantry in de garage", "group": "Indelingen", "file": "scenarios/pantry-garage.json"},
+    {"id": "laundry-bootroom", "name": "Laundry & bootroom", "group": "Indelingen", "file": "scenarios/laundry-bootroom.json"},
+    {"id": "slaapkamer-inloopkast", "name": "Slaapkamer met inloopkast", "group": "Indelingen", "file": "scenarios/slaapkamer-inloopkast.json"}
   ]
 }

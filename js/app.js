@@ -130,7 +130,7 @@ const builtCache = new Map(); // plan JSON -> built scene (max 3)
 async function loadRepoScenarios() {
   try {
     const idx = await (await fetch('scenarios/index.json')).json();
-    const files = await Promise.all(idx.scenarios.map((e) => fetch(e.file).then((r) => r.json()).then((o) => ({ ...validateScenario(o), id: e.id }))));
+    const files = await Promise.all(idx.scenarios.map((e) => fetch(e.file).then((r) => r.json()).then((o) => ({ ...validateScenario(o), id: e.id, group: e.group || 'Ontwerpen' }))));
     repoScenarios = files.map((sc) => ({ ...sc, key: 'repo:' + sc.id, base: sc.base || PLAN_URL }));
   } catch (e) { console.warn('Geen scenario-index', e); repoScenarios = []; }
 }
@@ -590,7 +590,8 @@ function scenarioOptionsHtml(selectedKey, excludeKey) {
   const opt = (sc) => sc.key === excludeKey ? '' : `<option value="${esc(sc.key)}" ${sc.key === selectedKey ? 'selected' : ''}>${esc(sc.name)}</option>`;
   const local = localScenarios();
   let h = opt(scenarioByKey('base'));
-  if (repoScenarios.length) h += `<optgroup label="Ontwerpen">${repoScenarios.map(opt).join('')}</optgroup>`;
+  const groups = [...new Set(repoScenarios.map((sc) => sc.group || 'Ontwerpen'))];
+  for (const g of groups) h += `<optgroup label="${esc(g)}">${repoScenarios.filter((sc) => (sc.group || 'Ontwerpen') === g).map(opt).join('')}</optgroup>`;
   if (local.length) h += `<optgroup label="Mijn scenario's">${local.map(opt).join('')}</optgroup>`;
   const extra = [current, compareWith].filter((sc) => sc && (sc.key === 'shared' || sc.key === 'unsaved'));
   if (extra.length) h += `<optgroup label="Gedeeld / niet opgeslagen">${extra.map(opt).join('')}</optgroup>`;

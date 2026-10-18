@@ -1,0 +1,145 @@
+{
+  "format": "interieur-scenario",
+  "version": 1,
+  "id": "kookeiland",
+  "name": "Kookeiland",
+  "description": "Het korte L-been en de ronde tafel maken plaats voor een vrijstaand eiland van 212 × 96 cm met een bar voor drie krukken aan de raamkant. De kastenwand met grote koelkast, vriezer en oven blijft staan, en het aanrecht kijkt nu de keuken in, naar de woonkamer. Je krijgt meer ladenruimte en een sociale plek om te eten. Wel is de loopruimte achter het aanrecht krap (92 cm) en is er geen echte eettafel meer.",
+  "base": "plans/vleugel.json",
+  "patches": [
+    {"op": "setMeta", "set": {"subtitle": "Indeling: kookeiland richting de woonkamer, kastenwand blijft"}},
+    {"op": "removeItem", "id": "keuken-base-4"},
+    {"op": "removeItem", "id": "keuken-base-5"},
+    {"op": "removeItem", "id": "keuken-worktop"},
+    {"op": "removeItem", "id": "keuken-panel-2"},
+    {"op": "removeItem", "id": "keuken-ronde-tafel-80"},
+    {"op": "removeItem", "id": "keuken-chair-1"},
+    {"op": "removeItem", "id": "keuken-chair-2"},
+    {"op": "removeItem", "id": "keuken-pendant"},
+    {
+      "op": "updateItem",
+      "id": "keuken-base-3",
+      "set": {"doors": null, "drawers": 3, "note": "Ladekast aan het eind van het aanrecht (geen hoekkast meer nodig)."}
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-eiland-1",
+        "type": "base",
+        "room": "keuken",
+        "pos": [380, 526],
+        "rot": 180,
+        "size": [100, 60, 88],
+        "drawers": 3,
+        "material": "@frontBase",
+        "label": "Kookeiland 212 × 96",
+        "labelHeight": 120,
+        "note": "Eiland met 2 × 100 cm ladekasten aan de kookkant; werkblad loopt 33 cm door als bar."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-eiland-2",
+        "type": "base",
+        "room": "keuken",
+        "pos": [480, 526],
+        "rot": 180,
+        "size": [100, 60, 88],
+        "drawers": 3,
+        "material": "@frontBase",
+        "note": "Brede pannenladen."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-eiland-blad",
+        "type": "worktop",
+        "room": "keuken",
+        "pos": [430, 541],
+        "elev": 88,
+        "size": [212, 96, 4],
+        "material": "@worktop",
+        "note": "Composiet werkblad met 33 cm overstek aan de raamkant voor de barkrukken."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-eiland-achterpaneel",
+        "type": "panel",
+        "room": "keuken",
+        "pos": [430, 557],
+        "size": [200, 2, 88],
+        "material": "@accent",
+        "note": "Eiken achterwand aan de zitkant."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-barkruk-1",
+        "type": "stool",
+        "room": "keuken",
+        "pos": [372, 597],
+        "size": [36, 36, 66],
+        "material": "@accent",
+        "label": "3 barkrukken",
+        "labelHeight": 90
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {"id": "keuken-barkruk-2", "type": "stool", "room": "keuken", "pos": [430, 597], "size": [36, 36, 66], "material": "@accent"}
+    },
+    {
+      "op": "addItem",
+      "item": {"id": "keuken-barkruk-3", "type": "stool", "room": "keuken", "pos": [488, 597], "size": [36, 36, 66], "material": "@accent"}
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-eiland-lamp-1",
+        "type": "pendant",
+        "room": "keuken",
+        "pos": [392, 541],
+        "ceiling": 260,
+        "drop": 95,
+        "intensity": 2.2,
+        "size": [30, 30, 36]
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "keuken-eiland-lamp-2",
+        "type": "pendant",
+        "room": "keuken",
+        "pos": [468, 541],
+        "ceiling": 260,
+        "drop": 95,
+        "intensity": 2.2,
+        "size": [30, 30, 36]
+      }
+    },
+    {
+      "op": "setView",
+      "id": "keuken",
+      "view": {"label": "Keuken", "pos": [520, 560, 1010], "target": [420, 70, 480], "walk": {"pos": [590, 455], "yaw": 110}}
+    },
+    {
+      "op": "updateRoom",
+      "id": "keuken",
+      "set": {
+        "notes": [
+          "Kastenwand links blijft: grote koelkast + aparte vriezer (120 cm), oven + combimagnetron en voorraadkast.",
+          "Rechte aanrechtwand met spoelbak, vaatwasser en 80 cm inductie; het korte L-been vervalt.",
+          "Vrijstaand kookeiland van 212 × 96 cm met 2 × 100 cm ladekasten en een bar voor drie krukken aan de raamkant.",
+          "Loopruimte: 92 cm tussen aanrecht en eiland, 99 cm langs de kastenwand en 110 cm naar de woonkamer.",
+          "De ronde tafel vervalt: je eet aan het eiland."
+        ]
+      }
+    }
+  ],
+  "checks": {"route": [[300, 450], [280, 380], [280, 250], [100, 252], [-100, 252], [-200, 305], [-420, 322], [-420, 330], [-500, 330], [-500, 240]]}
+}

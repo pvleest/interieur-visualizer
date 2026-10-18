@@ -32,7 +32,14 @@ The demo plan (`plans/vleugel.json`) is an interior design concept for a kitchen
 A **scenario** is the base plan plus an ordered list of patch operations (see *Patch format* below).
 
 - **Repo scenarios** live in `scenarios/*.json` and are listed in `scenarios/index.json`. Committing a new file and adding it to the index is enough to make it appear in the picker.
-- **Basisontwerp** is the base plan without patches. The repo ships two examples: *Licht & warm* and *Donker & strak*.
+- **Basisontwerp** is the base plan without patches. The picker groups the repo scenarios with the `group` field in the index:
+  - **Kleurvarianten** (palette only): *Licht & warm*, *Donker & strak*.
+  - **Indelingen** (layout variants; each has a Dutch rationale shown in the UI):
+    - *Kookeiland*: the short L-leg and the round table are replaced by a 212 × 96 island with a bar for three stools. The tall cabinet wall stays.
+    - *Pantry in de garage*: fridge, freezer and pantry cabinet move to a zone right next to the kitchen door in the garage. The kitchen becomes a U with 215 cm of extra worktop.
+    - *Laundry & bootroom*: washer and dryer are stacked, which gives a 197 cm folding counter with a slop sink. A bench with shoe drawers, a coat rail and a coat cabinet sit by the sliding door. The ironing cabinet stays.
+    - *Slaapkamer met inloopkast*: a new 10 cm wall behind the headboard creates a walk-in closet along the exterior wall, and the bed faces the garden door. The garage gets a 220 cm workbench and room for two bikes.
+- A scenario file can carry `"checks": {"route": [[x,z], …]}`: a walking route from the kitchen to the bedroom that the tests walk and keep clear of furniture.
 - **Opslaan als nieuw scenario** saves the current state, including live edits, in `localStorage` on that device.
 - **Deel link** compresses the scenario with lz-string into the URL hash (`#s=…`). The link opens the identical design on any device without a server or account. On a phone the native share sheet is used.
 - **Exporteer / Importeer JSON** downloads or loads a scenario file in the same format as the repo files.
@@ -88,6 +95,8 @@ A patch is a single operation, an array of operations, or `{ "ops": [...] }`. Ev
 | `addOpening` | `wall`, `opening` | `{"op":"addOpening","wall":"aanbouw-noord","opening":{"type":"window","offset":500,"width":100,"sill":90,"height":120}}` |
 | `updateOpening` | `wall`, `index` (or opening `id`), `set` | `{"op":"updateOpening","wall":"keuken-gevel","index":0,"set":{"sill":60}}` |
 | `removeOpening` | `wall`, `index` | `{"op":"removeOpening","wall":"garage-keuken","index":0}` |
+| `addWall` | `wall` (`id`, `from`, `to`, optional `thickness`, `height`, `openings`) | `{"op":"addWall","wall":{"id":"kleedkamer-wand","from":[-610,74.6],"to":[-610,307],"thickness":10}}` |
+| `removeWall` | `id` | `{"op":"removeWall","id":"kleedkamer-wand"}` |
 | `setMeta` | `set` (title, subtitle, style) | `{"op":"setMeta","set":{"subtitle":"Variant B"}}` |
 | `setView` | `id`, `view` | `{"op":"setView","id":"keuken","view":{"label":"Keuken","pos":[470,560,1010],"target":[370,70,470]}}` |
 
@@ -111,8 +120,23 @@ All dimensions are in cm. x points east and z points south. The origin is the in
 
 ```bash
 python3 -m http.server 8765 &
-node tools/test.mjs http://localhost:8765/   # walk keuken→garage→bijkeuken→slaapkamer, openings, walls, A/D strafe + phone pad, furniture fit, scenarios, share link
+node tools/test.mjs http://localhost:8765/   # walk keuken→garage→bijkeuken→slaapkamer, openings, walls, A/D strafe + phone pad, layout checks per scenario, share link
 ```
+
+For the base plan and **every** scenario, `tools/layout-checks.mjs` checks:
+- every item lies inside its room;
+- no two items intersect (footprint plus height; worktops on bases and chairs or stools under tables are fine);
+- no item sits inside a wall, including walls added by a scenario;
+- door leaves can swing freely, and 50 cm in front of every door, glass door and slider stays clear;
+- the garage walkway is at least 120 cm wide and empty;
+- the hard requirements are met:
+  - a large fridge plus a separate freezer;
+  - washer plus dryer;
+  - laundry-basket drawers;
+  - an ironing cabinet;
+  - at least 300 cm of tall garage cabinets;
+  - washer and dryer at least 30 cm from the bedroom wall;
+- a walking route keuken → garage → bijkeuken → slaapkamer stays walkable, with at least 50 cm clear of furniture.
 
 ## URL parameters
 
@@ -202,6 +226,8 @@ Wall normal: for a wall from `from` to `to`, `swing: 1` opens a door towards the
 | `openShelf` | Open shelving with crates (`shelves`, `crates: false`). |
 | `workbench` | Drawer base, butcher-block top, pegboard with tools, upper cabinet with LED. |
 | `bed`, `nightstand`, `wallLight`, `pendant`, `rug`, `curtain`, `slatPanel`, `rail`, `table`, `chair`, `plant` | Furniture and decoration. |
+| `bike` | Bicycle with a wall-rack post. `size: [length, handlebar width, height]`, `color`. |
+| `stool` | Bar stool. `size: [diameter, diameter, seat height]`. |
 | `ledStrip` | Emissive strip (`size: [length, width]`). |
 | `walkway` | Translucent floor marking: `polygon` in absolute coordinates, with `pos: [0,0]`. |
 
@@ -234,7 +260,9 @@ Een eenvoudige, data-gedreven **3D-interieurvisualizer** die in de browser draai
 - **Rondlopen**: slepen om rond te kijken, en W/S vooruit en achteruit, A/D opzij naar links en rechts, ←/→ draaien, of de knoppen op je telefoon.
 - Klik op een element of label voor de maten en een toelichting. In het paneel staan de ontwerpkeuzes per ruimte en een maattabel.
 
-**Scenario's**: kies een variant (Basisontwerp, Licht & warm, Donker & strak) of maak je eigen variant via *Ontwerp aanpassen*.
+**Scenario's**: kies een variant of maak je eigen variant via *Ontwerp aanpassen*.
+- Kleurvarianten: Licht & warm, Donker & strak.
+- Indelingen: Kookeiland, Pantry in de garage, Laundry & bootroom, Slaapkamer met inloopkast. Elke indeling heeft een korte uitleg in het paneel.
 - *Opslaan als nieuw scenario* bewaart de variant op het apparaat.
 - *Deel link* maakt een link waarin het hele scenario gecomprimeerd zit. Die link opent precies hetzelfde ontwerp op een andere telefoon of laptop.
 - Met *Vergelijken* en de toets C wissel je snel tussen twee scenario's.

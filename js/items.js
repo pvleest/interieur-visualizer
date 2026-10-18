@@ -452,6 +452,51 @@ function ironingCabinet(spec) {
   return g;
 }
 
+// Bicycle, parked along its length (size: [length, handlebar width, height]); front wheel at +x.
+function bike(spec) {
+  const g = new THREE.Group();
+  const M = materials();
+  const [l, w, h] = spec.size;
+  const r = Math.min(34, h * 0.33);
+  const frameM = mat(spec.color || '#2f3b35');
+  const wb = l - 2 * r - 6; // wheelbase
+  for (const x of [-wb / 2, wb / 2]) {
+    const tyre = new THREE.Mesh(new THREE.TorusGeometry(r, 2.2, 10, 40), M.black);
+    tyre.position.set(x, r + 2, 0); tyre.castShadow = true; g.add(tyre);
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 6, 12), M.steel);
+    hub.rotation.x = Math.PI / 2; hub.position.set(x, r + 2, 0); g.add(hub);
+  }
+  const bar = (x1, y1, x2, y2, rad = 1.6, m = frameM) => {
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, len, 8), m);
+    c.position.set((x1 + x2) / 2, (y1 + y2) / 2, 0); c.rotation.z = Math.atan2(y2 - y1, x2 - x1) - Math.PI / 2; c.castShadow = true; g.add(c);
+  };
+  const ay = r + 2, bbx = -wb * 0.08, bby = ay - 4, seatX = -wb * 0.2, seatY = h - 14, headX = wb * 0.32, headY = h - 12;
+  bar(-wb / 2, ay, bbx, bby); bar(-wb / 2, ay, seatX, seatY); bar(bbx, bby, seatX, seatY);
+  bar(bbx, bby, headX, headY - 8); bar(seatX, seatY - 6, headX, headY - 6); bar(headX, headY, wb / 2, ay);
+  B(g, 24, 4, 12, M.black, seatX - 2, seatY, 0, { rounded: 1.5 });
+  const hb = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, w - 4, 8), M.black);
+  hb.rotation.x = Math.PI / 2; hb.position.set(headX - 4, headY + 4, 0); g.add(hb);
+  if (spec.rack !== false) { B(g, 4, 30, 4, M.black, -wb / 2 - r - 4, 60, -w / 2 + 6); } // wall hook/rack post
+  return g;
+}
+
+// Bar stool: round seat on four black legs (size: [diameter, diameter, seat height]).
+function stool(spec) {
+  const g = new THREE.Group();
+  const M = materials();
+  const [w, , h] = spec.size;
+  const seat = new THREE.Mesh(new THREE.CylinderGeometry(w / 2, w / 2 - 1, 4, 28), mat(spec.material || 'oak'));
+  seat.position.y = h - 2; seat.castShadow = true; g.add(seat);
+  for (const [sx, sz] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.3, h - 4, 8), M.black);
+    leg.position.set(sx * w * 0.3, (h - 4) / 2, sz * w * 0.3); leg.rotation.z = -sx * 0.05; leg.rotation.x = sz * 0.05; leg.castShadow = true; g.add(leg);
+  }
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(w * 0.31, 0.8, 6, 24), M.black);
+  ring.rotation.x = Math.PI / 2; ring.position.y = h * 0.38; g.add(ring);
+  return g;
+}
+
 function garageCar(spec) { // optional ghost car volume
   const g = new THREE.Group();
   const [w, d, h] = spec.size;
@@ -477,7 +522,7 @@ export const BUILDERS = {
   basketDrawers, openShelf, workbench, ironingCabinet,
   ledStrip, walkway, bed,
   nightstand: floatingBox, wallLight, pendant, rug, curtain, slatPanel, table, chair, plant, rail,
-  car: garageCar,
+  car: garageCar, bike, stool,
 };
 
 export function buildItem(spec) {

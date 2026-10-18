@@ -1,6 +1,7 @@
 // Headless smoke + walk + scenario tests.
 // Usage: node tools/test.mjs [baseUrl]   (needs playwright-core + Chrome; CHROME env to override path)
 import { chromium } from 'playwright-core';
+import { checkPlan } from './layout-checks.mjs';
 const base = process.argv[2] || 'http://localhost:8765/';
 const browser = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 let failures = 0;
@@ -103,27 +104,40 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   check(kp.room === 'garage', 'keyboard W walks from kitchen into garage (room=' + kp.room + ', z=' + kp.z.toFixed(0) + ')');
   await page.evaluate(() => window.viz.stopWalk());
 
-  // 4b. every furniture footprint lies inside its room, for the base plan and every scenario
-  const fit = await page.evaluate(async () => {
-    const out = [];
-    for (const sc of window.viz.listScenarios()) {
-      await window.viz.loadScenario(sc.key);
-      const plan = window.viz.getPlan();
-      for (const it of plan.items) {
-        if (!it.room || !it.size || it.type === 'walkway' || it.type === 'wallLight') continue;
-        const r = plan.rooms.find((x) => x.id === it.room);
-        const xs = r.polygon.map((p) => p[0]), zs = r.polygon.map((p) => p[1]);
-        const a = ((it.rot || 0) * Math.PI) / 180, w = it.size[0], d = it.size[1] || 0;
-        const hw = (Math.abs(Math.cos(a)) * w + Math.abs(Math.sin(a)) * d) / 2, hd = (Math.abs(Math.sin(a)) * w + Math.abs(Math.cos(a)) * d) / 2;
-        let [x, z] = it.pos; const tol = 2.5;
-        if (it.type === 'rail') { x += (Math.sin(a) * d) / 2; z += (Math.cos(a) * d) / 2; } // rail origin sits at the wall, depth extends forward
-        if (x - hw < Math.min(...xs) - tol || x + hw > Math.max(...xs) + tol || z - hd < Math.min(...zs) - tol || z + hd > Math.max(...zs) + tol) out.push(`${sc.name}: ${it.id}`);
-      }
-    }
-    await window.viz.loadScenario('base');
-    return out;
-  });
-  check(fit.length === 0, 'all items fit inside their rooms in every scenario ' + (fit.length ? JSON.stringify(fit) : ''));
+  // 4b. layout checks for the base plan and every scenario: inside rooms, no intersections, no furniture in walls,
+  // door leaves and doorways clear, garage walkway >= 120 cm and free, hard requirements, and a walkable route
+  // keuken -> garage -> bijkeuken -> slaapkamer that also keeps 50 cm clear of furniture.
+  const DEFAULT_ROUTE = [[300, 450], [280, 380], [280, 250], [100, 252], [-100, 252], [-200, 305], [-420, 322], [-420, 330], [-500, 330], [-500, 240]];
+  const idx = await (await fetch(new URL('scenarios/index.json', base))).json();
+  const routes = { base: DEFAULT_ROUTE };
+  for (const e of idx.scenarios) routes['repo:' + e.id] = (await (await fetch(new URL(e.file, base))).json()).checks?.route || DEFAULT_ROUTE;
+  const keys = await page.evaluate(() => window.viz.listScenarios().map((s) => [s.key, s.name]));
+  check(keys.length === idx.scenarios.length + 1, `all ${idx.scenarios.length} repo scenarios listed (${keys.map((k) => k[1]).join(', ')})`);
+  for (const [key, name] of keys) {
+    await page.evaluate((k) => window.viz.loadScenario(k), key);
+    const plan = await page.evaluate(() => window.viz.getPlan());
+    const route = routes[key] || DEFAULT_ROUTE;
+    const issues = checkPlan(plan, { route });
+    check(issues.length === 0, `layout ${name}: inside rooms, no intersections, doors/walkway clear, requirements met` + (issues.length ? ' ' + JSON.stringify(issues) : ''));
+    const w = await WALK(page, route[0], route.slice(1));
+    const end = route[route.length - 1];
+    check(JSON.stringify(w.visited) === JSON.stringify(['keuken', 'garage', 'bijkeuken', 'slaapkamer']) && Math.hypot(w.end.x - end[0], w.end.z - end[1]) < 5,
+      `walk ${name}: ${w.visited.join(' -> ')} reaches (${end})`);
+    await page.evaluate(() => window.viz.stopWalk());
+  }
+  // the walk-in partition is a real wall: walking through it from the bed side is blocked
+  await page.evaluate(() => window.viz.loadScenario('repo:slaapkamer-inloopkast'));
+  const part = await WALK(page, [-560, 200], [[-680, 200]]);
+  check(part.end.x > -600, 'inloopkast: new partition wall blocks walking (x=' + part.end.x.toFixed(0) + ')');
+  await page.evaluate(() => window.viz.stopWalk());
+  // the checker itself catches mistakes
+  const basePlan = await page.evaluate(async () => { await window.viz.loadScenario('base'); return window.viz.getPlan(); });
+  const broken = structuredClone(basePlan);
+  broken.items.find((i) => i.id === 'keuken-ronde-tafel-80').pos = [405, 380];
+  broken.items.find((i) => i.id === 'bijkeuken-wasmachine').pos = [-317, 260];
+  broken.items.find((i) => i.id === 'garage-open-stelling-kratten').pos = [200, 250];
+  const caught = checkPlan(broken, { route: DEFAULT_ROUTE });
+  check(caught.some((m) => m.startsWith('overlap')) && caught.some((m) => m.includes('slaapkamerwand')) && caught.some((m) => m.includes('looppad')), 'layout checker detects overlap, machine against bedroom wall and blocked walkway (' + caught.length + ' issues)');
 
   // 5. scenarios + edit API
   const list = await page.evaluate(() => window.viz.listScenarios().map((s) => s.name));

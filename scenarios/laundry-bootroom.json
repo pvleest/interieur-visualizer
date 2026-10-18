@@ -1,0 +1,165 @@
+{
+  "format": "interieur-scenario",
+  "version": 1,
+  "id": "laundry-bootroom",
+  "name": "Laundry & bootroom",
+  "description": "Wasmachine en droger staan in één kolom, zo komt er 60 cm extra vouwblad en een uitstortgootsteen in dezelfde rij. Bij de schuifpui komt een bootroom met een bankje met schoenenlades en een kapstok, naast de garagedeur een garderobekast, en de strijkkast met uitklapbare strijkplank blijft. Let op: de droger zit bovenin (deur op ongeveer 1,60 m), je hebt een stapelkit nodig, en de deur naar de garage draait voortaan de garage in.",
+  "base": "plans/vleugel.json",
+  "patches": [
+    {"op": "setMeta", "set": {"subtitle": "Indeling: laundry & bootroom, machines gestapeld"}},
+    {"op": "removeItem", "id": "bijkeuken-plinth"},
+    {"op": "removeItem", "id": "bijkeuken-worktop-1"},
+    {"op": "removeItem", "id": "bijkeuken-base"},
+    {"op": "removeItem", "id": "bijkeuken-worktop-2"},
+    {"op": "removeItem", "id": "bijkeuken-plant"},
+    {"op": "removeItem", "id": "bijkeuken-ledstrip"},
+    {
+      "op": "addItem",
+      "item": {
+        "id": "bijkeuken-sokkel",
+        "type": "plinth",
+        "room": "bijkeuken",
+        "pos": [-257, 104.6],
+        "size": [60, 60, 30],
+        "material": "@frontUtility",
+        "note": "Sokkel met lade van 30 cm."
+      }
+    },
+    {"op": "moveItem", "id": "bijkeuken-wasmachine", "pos": [-257, 104.6], "elev": 30},
+    {
+      "op": "updateItem",
+      "id": "bijkeuken-wasmachine",
+      "set": {
+        "label": "Was-droogkolom",
+        "labelHeight": 225,
+        "note": "Wasmachine op een sokkel van 30 cm, droger erop met een stapelkit. 60 cm van de slaapkamerwand, met de schoonmaakkast ertussen."
+      }
+    },
+    {"op": "moveItem", "id": "bijkeuken-droger", "pos": [-257, 104.6], "elev": 115},
+    {"op": "updateItem", "id": "bijkeuken-droger", "set": {"label": null, "note": "Droger op de wasmachine (stapelkit met uittrekplank)."}},
+    {
+      "op": "addItem",
+      "item": {
+        "id": "bijkeuken-kolom-bovenkast",
+        "type": "wall",
+        "room": "bijkeuken",
+        "pos": [-257, 104.6],
+        "elev": 205,
+        "size": [60, 60, 35],
+        "doors": 1,
+        "material": "@frontUtility"
+      }
+    },
+    {"op": "moveItem", "id": "bijkeuken-3-wasmandlades", "pos": [-158.5, 104.6]},
+    {
+      "op": "addItem",
+      "item": {
+        "id": "bijkeuken-gootsteenkast",
+        "type": "base",
+        "room": "bijkeuken",
+        "pos": [-60, 104.6],
+        "size": [60, 60, 88],
+        "doors": 1,
+        "material": "@frontUtility",
+        "note": "Onderkast onder de uitstortgootsteen."
+      }
+    },
+    {"op": "moveItem", "id": "bijkeuken-vouwblad", "pos": [-128.5, 105.6]},
+    {"op": "resizeItem", "id": "bijkeuken-vouwblad", "size": [197, 62, 4]},
+    {
+      "op": "updateItem",
+      "id": "bijkeuken-vouwblad",
+      "set": {"label": "Vouwblad 197 cm", "note": "Doorlopend werkblad over de wasmanden en de gootsteen: 60 cm langer dan in het basisontwerp."}
+    },
+    {"op": "moveItem", "id": "bijkeuken-uitstortgootsteen", "pos": [-60, 100], "rot": 0},
+    {"op": "moveItem", "id": "bijkeuken-wall", "pos": [-128.5, 92.1]},
+    {"op": "resizeItem", "id": "bijkeuken-wall", "size": [197, 35, 75]},
+    {"op": "addItem", "item": {"id": "bijkeuken-led", "type": "ledStrip", "room": "bijkeuken", "pos": [-128.5, 106.6], "elev": 154, "size": [190, 2]}},
+    {"op": "moveItem", "id": "bijkeuken-kledingroede", "pos": [-347, 240], "rot": 90},
+    {"op": "updateItem", "id": "bijkeuken-kledingroede", "set": {"note": "Roede naast de strijkkast om gestreken was direct op te hangen."}},
+    {
+      "op": "updateItem",
+      "id": "bijkeuken-strijkkast",
+      "set": {
+        "label": "Strijkkast (uitklapbare strijkplank)",
+        "note": "Hoge kast met een uitklapbare strijkplank op werkhoogte; dicht is het een gewone kast."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "bijkeuken-garderobekast",
+        "type": "tall",
+        "room": "bijkeuken",
+        "pos": [-55, 173.2],
+        "rot": -90,
+        "size": [73, 50, 240],
+        "rows": [{"cols": 1}, {"h": 45, "cols": 1}],
+        "material": "@frontUtility",
+        "label": "Garderobekast",
+        "labelHeight": 255,
+        "note": "Jassen, tassen en onderin schoenen; vlak naast de deur naar de garage."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "bijkeuken-schoenenbank",
+        "type": "base",
+        "room": "bijkeuken",
+        "pos": [-50, 336],
+        "rot": -90,
+        "size": [76, 40, 45],
+        "drawers": 2,
+        "material": "@accent",
+        "label": "Bankje met schoenenlades",
+        "labelHeight": 70,
+        "note": "Zitbank bij de schuifpui met twee schoenenlades."
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "bijkeuken-bankkussen",
+        "type": "worktop",
+        "room": "bijkeuken",
+        "pos": [-50, 336],
+        "rot": -90,
+        "elev": 45,
+        "size": [76, 40, 6],
+        "material": "linen"
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "bijkeuken-kapstok",
+        "type": "rail",
+        "room": "bijkeuken",
+        "pos": [-30, 336],
+        "rot": -90,
+        "elev": 180,
+        "size": [70, 25],
+        "hangers": 3,
+        "label": "Kapstok",
+        "labelHeight": 200,
+        "note": "Kapstok boven het bankje."
+      }
+    },
+    {"op": "updateOpening", "wall": "garage-bijkeuken", "index": 0, "set": {"swing": -1, "hinge": "start", "open": 100}},
+    {
+      "op": "updateRoom",
+      "id": "bijkeuken",
+      "set": {
+        "notes": [
+          "Wasmachine en droger gestapeld in één kolom (wasmachine op een sokkel van 30 cm), 60 cm van de slaapkamerwand, met de schoonmaakkast ertussen.",
+          "Daardoor een vouwblad van 197 cm over drie wasmandlades en een uitstortgootsteen, met bovenkasten erboven.",
+          "Strijkkast met uitklapbare strijkplank tegen de slaapkamerwand en een kledingroede ernaast.",
+          "Bootroom bij de schuifpui: een bankje met schoenenlades en een kapstok, plus een garderobekast naast de garagedeur.",
+          "De deur naar de garage draait nu de garage in, zodat de bankjeshoek vrij blijft."
+        ]
+      }
+    }
+  ],
+  "checks": {"route": [[300, 450], [280, 380], [280, 250], [100, 252], [-100, 252], [-200, 305], [-420, 322], [-420, 330], [-500, 330], [-500, 240]]}
+}

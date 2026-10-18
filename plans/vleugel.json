@@ -138,7 +138,7 @@
       "from": [-357, 74.6],
       "to": [-357, 377],
       "thickness": 20,
-      "openings": [{"type": "door", "offset": 205, "width": 85, "height": 211, "swing": 1, "hinge": "end", "open": 160}]
+      "openings": [{"type": "door", "offset": 205, "width": 85, "height": 211, "swing": 1, "hinge": "start", "open": 90}]
     },
     {"id": "slaapkamer-west", "from": [-770, 44.6], "to": [-770, 407], "thickness": 30},
     {"id": "keuken-west", "from": [150, 311], "to": [150, 670], "thickness": 30},
@@ -570,7 +570,7 @@
       "label": "Schoonmaakkast",
       "note": "Hoge kast voor stofzuiger, bezem en schoonmaakspullen, in de hoek naast de machines."
     },
-    {"id": "bijkeuken-plant", "type": "plant", "room": "bijkeuken", "pos": [-48, 355], "size": [32, 32, 90], "seed": 5},
+    {"id": "bijkeuken-plant", "type": "plant", "room": "bijkeuken", "pos": [-268, 357], "size": [32, 32, 90], "seed": 5},
     {
       "id": "slaapkamer-inbouwkast",
       "type": "wardrobe",

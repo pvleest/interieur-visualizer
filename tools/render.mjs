@@ -12,6 +12,15 @@ const shots = [
   ['07-donker-strak-overzicht', 'scenario=donker-strak&view=overzicht&labels=0'],
   ['08-donker-strak-keuken', 'scenario=donker-strak&view=keuken&labels=0'],
   ['09-donker-strak-bijkeuken', 'scenario=donker-strak&view=bijkeuken&labels=0'],
+  ['10-kookeiland-overzicht', 'scenario=kookeiland&view=overzicht&labels=0'],
+  ['11-kookeiland-keuken', 'scenario=kookeiland&view=keuken&labels=0'],
+  ['12-pantry-garage-overzicht', 'scenario=pantry-garage&view=overzicht&labels=0'],
+  ['13-pantry-garage-close-up', 'scenario=pantry-garage&view=pantry&labels=0'],
+  ['14-laundry-bootroom-overzicht', 'scenario=laundry-bootroom&view=overzicht&labels=0'],
+  ['15-laundry-bootroom-bijkeuken', 'scenario=laundry-bootroom&view=bijkeuken&labels=0'],
+  ['16-inloopkast-overzicht', 'scenario=slaapkamer-inloopkast&view=overzicht&labels=0'],
+  ['17-inloopkast-slaapkamer', 'scenario=slaapkamer-inloopkast&view=slaapkamer&labels=0'],
+  ['18-inloopkast-garage-werkbank-fietsen', 'scenario=slaapkamer-inloopkast&view=garage&labels=0'],
 ].filter(s => !only || only.split(',').includes(s[0]));
 const browser = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const W = Number(process.env.W || 1600), H = Number(process.env.H || 1000);
