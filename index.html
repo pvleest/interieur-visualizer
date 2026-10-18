@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Interieur-visualizer · 3D ontwerp</title>
+<meta name="description" content="Data-gedreven 3D interieur-visualizer (Three.js): plattegrond + inrichting uit een JSON-config.">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%23a67c52%22/%3E%3Cpath d=%22M8 24V8h16v16zM8 16h9v8%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.5%22/%3E%3C/svg%3E">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+</head>
+<body>
+<div id="app">
+  <div id="viewport"></div>
+
+  <header id="topbar" class="ui">
+    <div class="brand">
+      <div class="logo">◰</div>
+      <div>
+        <h1 id="title">Interieurontwerp</h1>
+        <p id="subtitle"></p>
+      </div>
+    </div>
+  </header>
+
+  <nav id="views" class="ui"></nav>
+
+  <div id="toggles" class="ui">
+    <button id="tLabels" class="chip on" title="Labels tonen/verbergen">Labels</button>
+    <button id="tWalls" class="chip" title="Wanden: automatisch wegsnijden / laag / hoog">Wanden: auto</button>
+    <button id="tPanel" class="chip" title="Infopaneel">Info</button>
+  </div>
+
+  <aside id="panel" class="ui">
+    <div class="tabs">
+      <button data-tab="design" class="on">Ontwerp</button>
+      <button data-tab="rooms">Maten</button>
+      <button data-tab="details">Details</button>
+      <button data-tab="help">Bediening</button>
+    </div>
+    <section id="tab-design" class="tab on"></section>
+    <section id="tab-rooms" class="tab"></section>
+    <section id="tab-details" class="tab"><p class="muted">Klik op een kast, apparaat of meubel (of op een label) om de maten en toelichting te zien.</p></section>
+    <section id="tab-help" class="tab">
+      <ul class="help">
+        <li><b>Draaien</b>: slepen met muis/vinger · <b>zoomen</b>: scrollen / knijpen · <b>verschuiven</b>: rechtermuisknop of twee vingers.</li>
+        <li><b>Rondlopen</b>: slepen om te kijken, <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> of pijltjes om te lopen; op telefoon de pijlknoppen.</li>
+        <li><b>Wanden: auto</b> snijdt de wanden tussen jou en de ruimte weg (poppenhuis). Klik om te wisselen naar laag of volledig.</li>
+        <li>Klik op een element voor maten (b × d × h in cm).</li>
+      </ul>
+      <p class="muted small">Concept-visualisatie op basis van de aangeleverde plattegrond. Maten zijn indicatief; controleer vóór bestellen.</p>
+    </section>
+  </aside>
+
+  <div id="tooltip"></div>
+  <div id="walkpad" class="ui">
+    <button data-k="left" aria-label="draai links">⟲</button>
+    <button data-k="fwd" aria-label="vooruit">▲</button>
+    <button data-k="right" aria-label="draai rechts">⟳</button>
+    <button data-k="back" aria-label="achteruit">▼</button>
+  </div>
+  <div id="loading"><div class="spinner"></div><span>3D-model laden…</span></div>
+</div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

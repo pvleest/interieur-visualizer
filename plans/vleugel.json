@@ -1,0 +1,266 @@
+{
+ "meta": {
+   "title": "Keuken, garage, bijkeuken & slaapkamer",
+   "subtitle": "Interieurontwerp: één doorlopende stijl met mat eiken en warm greige, zwarte accenten",
+   "units": "cm",
+   "style": "Greeploze fronten in mat eiken en warm greige, zwarte details (profielen, kranen, kozijnen, verlichting), licht composiet werkblad, grijze gietvloer in de aanbouw."
+ },
+ "defaults": {"wallThickness": 20, "wallHeight": 260, "ceilingHeight": 260, "floor": "concrete"},
+ "rooms": [
+  {
+    "id": "garage",
+    "name": "Garage",
+    "polygon": [
+      [
+        0,
+        0
+      ],
+      [
+        880,
+        0
+      ],
+      [
+        880,
+        311
+      ],
+      [
+        0,
+        311
+      ]
+    ],
+    "floor": "epoxy",
+    "ceilingHeight": 240,
+    "dims": "880 × 311 cm",
+    "lights": [
+      {
+        "pos": [
+          220,
+          155
+        ],
+        "intensity": 3.5
+      },
+      {
+        "pos": [
+          660,
+          155
+        ],
+        "intensity": 3.5
+      }
+    ],
+    "notes": [
+      "Over de volle lange wand een kastenwand tot het plafond (235 cm hoog, 60 cm diep) in warm greige, op stelpootjes met verdekte zwarte plint tegen vocht.",
+      "Mix van gesloten kasten (9 deuren + bovenkasten), één open eiken stelling voor kratten en een gereedschapsnis met werkblad, gaatjesbord en bovenkast.",
+      "Looppad van keukendeur naar aanbouw blijft ruim 120 cm vrij (groen gemarkeerd); daarnaast blijft ca. 250 cm vrije vloerbreedte over.",
+      "Twee lange LED-lijnen aan het plafond en LED onder de bovenkast van de werkplek.",
+      "Koelkast en vriezer passen in de keuken, dus de garage blijft vrij. Alternatief: direct naast de keukendeur (dan klimaatklasse SN-T kiezen)."
+    ]
+  },
+  {
+    "id": "keuken",
+    "name": "Keuken",
+    "polygon": [
+      [
+        120,
+        341
+      ],
+      [
+        601,
+        341
+      ],
+      [
+        601,
+        640
+      ],
+      [
+        120,
+        640
+      ]
+    ],
+    "floor": "oak",
+    "ceilingHeight": 260,
+    "dims": "481 × 299 cm",
+    "lights": [
+      {
+        "pos": [
+          360,
+          470
+        ],
+        "intensity": 4
+      }
+    ],
+    "notes": [
+      "Het L-aanrecht blijft open. Op het lange deel spoelbak, vaatwasser en een 80 cm inductiekookplaat, met 70 cm vrij werkblad tussen spoelbak en kookplaat.",
+      "Tegen de linkerwand een kastenwand van 4 kolommen: grote koelkast en aparte vriezer als twee inbouwkolommen naast elkaar (120 cm), oven + combimagnetron op ooghoogte, en een voorraadkast.",
+      "Onderkasten warm greige met zwart greepprofiel, hoge kasten en bovenkasten in mat eiken; licht composiet werkblad en een greige tegelachterwand.",
+      "Kleine ronde eettafel voor twee bij het raam met een zwarte hanglamp."
+    ]
+  },
+  {
+    "id": "bijkeuken",
+    "name": "Bijkeuken",
+    "polygon": [
+      [
+        -347,
+        0
+      ],
+      [
+        -30,
+        0
+      ],
+      [
+        -30,
+        302.4
+      ],
+      [
+        -347,
+        302.4
+      ]
+    ],
+    "floor": "concrete",
+    "ceilingHeight": 260,
+    "dims": "317 × 302 cm",
+    "lights": [
+      {
+        "pos": [
+          -190,
+          150
+        ],
+        "intensity": 3.5
+      }
+    ],
+    "notes": [
+      "Wasmachine en droger naast elkaar op een verhoging van 40 cm (met lade), tegen de achtergevel en dus niet tegen de slaapkamerwand.",
+      "Doorlopend composiet werkblad in L-vorm om te vouwen, met daaronder drie wasmandlades (wit, bont, donker) en een kleine uitstortgootsteen.",
+      "Kledingroede boven het werkblad om direct op te hangen; bovenkasten voor wasmiddel boven de machines.",
+      "Hoge schoonmaakkast in de hoek (stofzuiger, bezem) en daarnaast tegen de slaapkamerwand een hoge kast met uitklapbare strijkplank die de vrije ruimte in het midden gebruikt.",
+      "Grijze gietvloer; de schuifpui houdt het midden vrij en licht."
+    ]
+  },
+  {
+    "id": "slaapkamer",
+    "name": "Slaapkamer",
+    "polygon": [
+      [
+        -755,
+        0
+      ],
+      [
+        -367,
+        0
+      ],
+      [
+        -367,
+        302.4
+      ],
+      [
+        -755,
+        302.4
+      ]
+    ],
+    "floor": "concrete",
+    "ceilingHeight": 260,
+    "dims": "388 × 302 cm",
+    "lights": [
+      {
+        "pos": [
+          -560,
+          150
+        ],
+        "intensity": 2.5,
+        "color": 16765360
+      }
+    ],
+    "notes": [
+      "Inbouwkast in mat eiken over de wand met de bijkeuken (200 cm breed, tot het plafond) plus een bovenkast boven de deur: extra geluidsbuffer tegen de machines.",
+      "Bed (160 × 210) gecentreerd tegen de tegenoverliggende wand, met een eiken lamellenwand als hoofdbord, zwevende nachtkastjes en zwarte wandlampjes.",
+      "Groot wollen vloerkleed (240 × 300) en linnen verduisterende gordijnen over de hele gevel maken de grijze vloer warm.",
+      "Warme houttinten en zacht textiel; zwarte accenten sluiten aan op de rest van de vleugel."
+    ]
+  }
+ ],
+ "walls": [
+  {"id": "aanbouw-noord", "from": [-785, -15], "to": [-30, -15], "thickness": 30},
+  {"id": "garage-noord", "from": [-30, -15], "to": [910, -15], "thickness": 30, "height": 240},
+  {"id": "garage-oost", "from": [895, -30], "to": [895, 341], "thickness": 30, "height": 240, "openings": [{"type": "garage", "offset": 85, "width": 230, "height": 215}]},
+  {"id": "garage-keuken", "from": [-30, 326], "to": [910, 326], "thickness": 30, "openings": [{"type": "window", "offset": 45, "width": 90, "sill": 100, "height": 100, "sillSide": -1}, {"type": "door", "offset": 220, "width": 90, "height": 211, "swing": 1, "hinge": "start"}]},
+  {"id": "garage-bijkeuken", "from": [-15, -30], "to": [-15, 332.4], "thickness": 30, "openings": [{"type": "door", "offset": 200, "width": 85, "height": 211, "swing": 1, "hinge": "end", "open": 160}]},
+  {"id": "aanbouw-gevel", "from": [-785, 317.4], "to": [0, 317.4], "thickness": 30, "openings": [{"type": "window", "offset": 70, "width": 140, "sill": 30, "height": 200, "panes": 2, "sillSide": -1}, {"type": "glassdoor", "offset": 250, "width": 100, "height": 215}, {"type": "slider", "offset": 498, "width": 230, "height": 230}]},
+  {"id": "bijkeuken-slaapkamer", "from": [-357, 0], "to": [-357, 302.4], "thickness": 20, "openings": [{"type": "door", "offset": 205, "width": 85, "height": 211, "swing": 1, "hinge": "end", "open": 160}]},
+  {"id": "slaapkamer-west", "from": [-770, -30], "to": [-770, 332.4], "thickness": 30},
+  {"id": "keuken-west", "from": [105, 311], "to": [105, 670], "thickness": 30},
+  {"id": "keuken-gevel", "from": [90, 655], "to": [460, 655], "thickness": 30, "openings": [{"type": "window", "offset": 110, "width": 250, "sill": 85, "height": 130, "panes": 3, "sillSide": -1}]},
+  {"id": "keuken-oost", "from": [608.5, 341], "to": [608.5, 655], "thickness": 15}
+ ],
+ "context": [
+  {"polygon": [[460, 640], [1000, 640], [1000, 980], [460, 980]], "material": "#d6d3cc", "label": "Woonkamer (bestaand)"},
+  {"polygon": [[616, 341], [1000, 341], [1000, 640], [616, 640]], "material": "#d6d3cc", "label": "Overige woning"}
+ ],
+ "items": [
+  {"type": "fridge", "room": "keuken", "pos": [150, 375], "rot": 90, "size": [60, 60, 250], "label": "Koelkast (inbouw, 178 cm)", "note": "Grote inbouwkoelkast achter een eiken front."},
+  {"type": "freezer", "room": "keuken", "pos": [150, 435], "rot": 90, "size": [60, 60, 250], "label": "Vriezer (inbouw)", "note": "Aparte inbouwvriezer naast de koelkast: samen 120 cm."},
+  {"type": "ovenColumn", "room": "keuken", "pos": [150, 495], "rot": 90, "size": [60, 60, 250], "label": "Oven + magnetron", "note": "Oven en combimagnetron op ooghoogte, laden eronder."},
+  {"type": "tall", "room": "keuken", "pos": [150, 555], "rot": 90, "size": [60, 60, 250], "rows": [{"cols": 1}, {"h": 62, "cols": 1}], "label": "Voorraadkast", "note": "Hoge voorraadkast met binnenladen."},
+  {"type": "base", "room": "keuken", "pos": [360, 371], "size": [60, 60, 88], "doors": 1, "note": "Spoelbakkast met afvalscheiding."},
+  {"type": "dishwasher", "room": "keuken", "pos": [420, 371], "size": [60, 60, 88], "label": "Vaatwasser", "note": "Volledig geïntegreerde vaatwasser naast de spoelbak."},
+  {"type": "base", "room": "keuken", "pos": [495.5, 371], "size": [91, 60, 88], "drawers": 3, "note": "Pannenladen onder de kookplaat."},
+  {"type": "base", "room": "keuken", "pos": [571, 371], "size": [60, 60, 88], "doors": 1, "note": "Hoekkast met draaicarrousel."},
+  {"type": "base", "room": "keuken", "pos": [571, 443.5], "rot": -90, "size": [85, 60, 88], "drawers": 3, "note": "Ladekast in het korte been van de L."},
+  {"type": "base", "room": "keuken", "pos": [571, 528.5], "rot": -90, "size": [85, 60, 88], "drawers": 3, "note": "Ladekast in het korte been van de L."},
+  {"type": "worktop", "room": "keuken", "pos": [465.5, 372], "elev": 88, "size": [271, 62, 4], "label": "Werkblad L-vorm (composiet)", "labelHeight": 120, "note": "Licht composiet werkblad, 4 cm dik, werkhoogte 92 cm."},
+  {"type": "worktop", "room": "keuken", "pos": [570, 487], "rot": -90, "elev": 88, "size": [168, 62, 4]},
+  {"type": "sink", "room": "keuken", "pos": [360, 368], "elev": 92, "size": [50, 40], "label": "Spoelbak", "labelHeight": 140, "note": "Zwarte composiet spoelbak met zwarte kraan."},
+  {"type": "hob", "room": "keuken", "pos": [495, 371], "elev": 92, "size": [80, 52], "label": "Kookplaat 80 cm", "labelHeight": 110, "note": "Inductiekookplaat; 70 cm vrij werkblad tot de spoelbak."},
+  {"type": "panel", "room": "keuken", "pos": [465.5, 342], "elev": 92, "size": [271, 1.5, 63], "material": "tile", "note": "Tegelachterwand in warm greige."},
+  {"type": "panel", "room": "keuken", "pos": [600, 487], "rot": -90, "elev": 92, "size": [168, 1.5, 30], "material": "tile"},
+  {"type": "wall", "room": "keuken", "pos": [465.5, 358.5], "elev": 155, "size": [271, 35, 75], "doors": 4, "material": "oak", "note": "Bovenkasten in mat eiken, greeploos (push-to-open)."},
+  {"type": "hood", "room": "keuken", "pos": [495, 362], "elev": 149, "size": [80, 34, 6], "note": "Vlakke onderbouwkap, zwart."},
+  {"type": "ledStrip", "room": "keuken", "pos": [420, 372], "elev": 154, "size": [160, 2]},
+  {"type": "table", "room": "keuken", "pos": [300, 575], "size": [80, 80, 75], "label": "Ronde tafel Ø80", "labelHeight": 100, "note": "Kleine eettafel voor twee bij het raam."},
+  {"type": "chair", "room": "keuken", "pos": [252, 575], "rot": 90, "size": [44, 44, 86]},
+  {"type": "chair", "room": "keuken", "pos": [348, 575], "rot": -90, "size": [44, 44, 86]},
+  {"type": "pendant", "room": "keuken", "pos": [300, 575], "ceiling": 260, "drop": 85, "intensity": 2.5, "size": [36, 36, 40]},
+  {"type": "tall", "room": "garage", "pos": [125, 30], "size": [240, 60, 235], "material": "greige", "rows": [{"cols": 4}, {"h": 45, "cols": 4}], "label": "Hoge kastenwand", "note": "4 gesloten kasten tot het plafond, 60 cm diep, op stelpootjes met verdekte plint."},
+  {"type": "openShelf", "room": "garage", "pos": [295, 30], "size": [100, 60, 235], "shelves": 5, "label": "Open stelling kratten", "note": "Open eiken stelling voor kratten met vaak gebruikte spullen."},
+  {"type": "workbench", "room": "garage", "pos": [425, 30], "size": [160, 60, 235], "label": "Gereedschapsnis + gaatjesbord", "note": "Werkblad op 92 cm, gereedschapsladen, gaatjesbord en bovenkast met LED."},
+  {"type": "tall", "room": "garage", "pos": [655, 30], "size": [300, 60, 235], "material": "greige", "rows": [{"cols": 5}, {"h": 45, "cols": 5}], "label": "Hoge kastenwand", "note": "5 gesloten kasten tot het plafond, o.a. voor tuinspullen en voorraad."},
+  {"type": "ledStrip", "room": "garage", "pos": [430, 100], "elev": 238, "size": [800, 3]},
+  {"type": "ledStrip", "room": "garage", "pos": [430, 230], "elev": 238, "size": [800, 3]},
+  {"type": "walkway", "room": "garage", "pos": [0, 0], "polygon": [[0, 150], [295, 150], [295, 311], [175, 311], [175, 270], [0, 270]], "label": "Looppad 120 cm", "labelAt": [140, 210], "labelHeight": 10, "size": [295, 161, 0], "note": "Vrij looppad van de keukendeur naar de deur van de bijkeuken, 120 cm breed."},
+  {"type": "ironingCabinet", "room": "bijkeuken", "pos": [-317, 100], "rot": 90, "size": [60, 60, 240], "label": "Strijkkast (uitklapbare plank)", "note": "Hoge kast met inklapbare strijkplank, plank voor strijkijzer en wasmand."},
+  {"type": "plinth", "room": "bijkeuken", "pos": [-227, 30], "size": [120, 60, 40], "material": "greige", "note": "Verhoging van 40 cm met lade, zodat je niet hoeft te bukken."},
+  {"type": "washer", "room": "bijkeuken", "pos": [-257, 30], "elev": 40, "size": [60, 60, 85], "label": "Wasmachine", "note": "Op 40 cm verhoging, tegen de achtergevel (niet tegen de slaapkamer)."},
+  {"type": "dryer", "room": "bijkeuken", "pos": [-197, 30], "elev": 40, "size": [60, 60, 85], "label": "Droger", "note": "Naast de wasmachine op dezelfde verhoging."},
+  {"type": "worktop", "room": "bijkeuken", "pos": [-227, 31], "elev": 127, "size": [120, 62, 3], "note": "Plank boven de machines voor wasmiddel."},
+  {"type": "basketDrawers", "room": "bijkeuken", "pos": [-98.5, 30], "size": [137, 60, 88], "label": "3 wasmandlades", "note": "Drie uittrekbare wasmanden: wit, bont en donker."},
+  {"type": "base", "room": "bijkeuken", "pos": [-60, 112.5], "rot": -90, "size": [105, 60, 88], "doors": 2, "note": "Onderkast onder de uitstortgootsteen."},
+  {"type": "worktop", "room": "bijkeuken", "pos": [-98.5, 31], "elev": 88, "size": [137, 62, 4], "label": "Vouwblad", "labelHeight": 115, "note": "Doorlopend composiet werkblad om te vouwen."},
+  {"type": "worktop", "room": "bijkeuken", "pos": [-61, 113.5], "rot": -90, "elev": 88, "size": [103, 62, 4]},
+  {"type": "sink", "room": "bijkeuken", "pos": [-58, 113], "rot": -90, "elev": 92, "size": [45, 40], "label": "Uitstortgootsteen", "labelHeight": 135, "note": "Kleine extra diepe gootsteen voor vlekken en emmers."},
+  {"type": "wall", "room": "bijkeuken", "pos": [-158.5, 17.5], "elev": 155, "size": [257, 35, 75], "doors": 4, "material": "oak", "note": "Bovenkasten voor wasmiddel en reserve."},
+  {"type": "ledStrip", "room": "bijkeuken", "pos": [-98.5, 32], "elev": 154, "size": [130, 2]},
+  {"type": "rail", "room": "bijkeuken", "pos": [-32, 112.5], "rot": -90, "elev": 190, "size": [95, 30], "label": "Kledingroede", "labelHeight": 215, "note": "Roede om was direct op hangers te hangen."},
+  {"type": "tall", "room": "bijkeuken", "pos": [-317, 30], "size": [60, 60, 240], "material": "greige", "rows": [{"cols": 1}, {"h": 50, "cols": 1}], "label": "Schoonmaakkast", "note": "Hoge kast voor stofzuiger, bezem en schoonmaakspullen, in de hoek naast de machines."},
+  {"type": "plant", "room": "bijkeuken", "pos": [-60, 262], "size": [40, 40, 90], "seed": 5},
+  {"type": "wardrobe", "room": "slaapkamer", "pos": [-397, 100], "rot": -90, "size": [200, 60, 255], "material": "oak", "rows": [{"cols": 4}, {"h": 45, "cols": 4}], "label": "Inbouwkast (geluidsbuffer)", "note": "Inbouwkast tot het plafond over de wand met de bijkeuken; dempt het geluid van de machines."},
+  {"type": "wall", "room": "slaapkamer", "pos": [-387, 251], "rot": -90, "elev": 215, "size": [102, 40, 40], "doors": 2, "material": "oak", "note": "Bovenkast boven de deur, maakt de kastwand compleet."},
+  {"type": "slatPanel", "room": "slaapkamer", "pos": [-753, 151], "rot": 90, "size": [300, 3, 125], "note": "Eiken lamellenwand als hoofdbord."},
+  {"type": "bed", "room": "slaapkamer", "pos": [-645, 151], "rot": 90, "size": [160, 210, 58], "label": "Bed 160 × 210", "note": "Eiken bed met zwevende voet, gecentreerd tegen de wand."},
+  {"type": "nightstand", "room": "slaapkamer", "pos": [-732, 47], "rot": 90, "elev": 42, "size": [45, 40, 28], "label": "Zwevend nachtkastje", "labelHeight": 95},
+  {"type": "nightstand", "room": "slaapkamer", "pos": [-732, 255], "rot": 90, "elev": 42, "size": [45, 40, 28]},
+  {"type": "wallLight", "room": "slaapkamer", "pos": [-752, 47], "rot": 90, "elev": 108, "size": [10, 20, 12], "label": "Wandlampje", "labelHeight": 140},
+  {"type": "wallLight", "room": "slaapkamer", "pos": [-752, 255], "rot": 90, "elev": 108, "size": [10, 20, 12]},
+  {"type": "rug", "room": "slaapkamer", "pos": [-600, 151], "rot": 90, "size": [240, 300, 1], "label": "Vloerkleed 240 × 300", "labelHeight": 10},
+  {"type": "curtain", "room": "slaapkamer", "attachTo": "aanbouw-gevel", "pos": [-728, 293], "size": [44, 10, 252], "label": "Linnen verduisteringsgordijn", "labelHeight": 200},
+  {"type": "curtain", "room": "slaapkamer", "attachTo": "aanbouw-gevel", "pos": [-555, 293], "size": [50, 10, 252]},
+  {"type": "curtain", "room": "slaapkamer", "attachTo": "aanbouw-gevel", "pos": [-412, 293], "size": [36, 10, 252]},
+  {"type": "panel", "room": "slaapkamer", "attachTo": "aanbouw-gevel", "pos": [-585, 296], "elev": 254, "size": [335, 3, 2], "material": "black"}
+ ],
+ "views": {
+  "overzicht": {"label": "Overzicht", "pos": [880, 1080, 1180], "target": [40, 0, 250]},
+  "plattegrond": {"label": "Plattegrond", "pos": [60, 1900, 420], "target": [60, 0, 330], "labels": "*"},
+  "keuken": {"label": "Keuken", "pos": [470, 560, 1010], "target": [370, 70, 470], "walk": {"pos": [430, 610], "yaw": 25}},
+  "garage": {"label": "Garage", "pos": [780, 560, 660], "target": [380, 60, 110], "walk": {"pos": [760, 240], "yaw": 90}},
+  "bijkeuken": {"label": "Bijkeuken", "pos": [-250, 500, 760], "target": [-170, 60, 110], "walk": {"pos": [-170, 270], "yaw": 0}},
+  "slaapkamer": {"label": "Slaapkamer", "pos": [-680, 520, 820], "target": [-540, 60, 140], "walk": {"pos": [-460, 250], "yaw": 65}}
+ }
+}
