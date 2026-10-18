@@ -193,6 +193,9 @@ function goView(id, instant = false) {
   if (!v) return;
   currentView = id;
   const toPos = cm(v.pos), toTarget = cm(v.target);
+  // portrait screens (phones): step back so the whole view still fits
+  const aspect = W() / H();
+  if (aspect < 1.2) toPos.sub(toTarget).multiplyScalar(Math.min(2.3, Math.pow(1.2 / aspect, 0.85))).add(toTarget);
   if (instant) { camera.position.copy(toPos); controls.target.copy(toTarget); controls.update(); }
   else tween = { t: 0, dur: 0.9, fromPos: camera.position.clone(), fromT: controls.target.clone(), toPos, toTarget };
   setActiveNav(id);
