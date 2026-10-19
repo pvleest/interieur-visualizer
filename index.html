@@ -30,6 +30,7 @@
   <div id="toggles" class="ui">
     <button id="tScenario" class="chip scen" title="Scenario's">◫ Basisontwerp</button>
     <button id="tLabels" class="chip on" title="Labels tonen/verbergen">Labels</button>
+    <button id="tEdit" class="chip edit" title="Bewerken: kasten en meubels verplaatsen, toevoegen en verwijderen">✎ Bewerken</button>
     <button id="tElektra" class="chip" title="Elektra: wandcontactdozen en aansluitpunten tonen/verbergen">Elektra</button>
     <button id="tWalls" class="chip" title="Wanden: automatisch wegsnijden / laag / hoog">Wanden: auto</button>
     <button id="tPanel" class="chip" title="Infopaneel">Info</button>
@@ -55,12 +56,24 @@
         <li><b>Rondlopen</b>: slepen om te kijken, <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> of pijltjes om te lopen; op telefoon de pijlknoppen.</li>
         <li><b>Wanden: auto</b> snijdt de wanden tussen jou en de ruimte weg (poppenhuis). Klik om te wisselen naar laag of volledig.</li>
         <li>Klik op een element voor maten (b × d × h in cm).</li>
+        <li><b>Bewerken</b>: kies een item en sleep het (vastklikken aan wanden, kasten en een raster van 5 cm). <kbd>R</kbd> draait 90°, <kbd>Delete</kbd> verwijdert, <kbd>Ctrl</kbd>+<kbd>D</kbd> dupliceert, <kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> ongedaan / opnieuw. Met <b>Toevoegen</b> zet je een nieuw item in de ruimte die je bekijkt. Rood = past niet (botsing, deur, looppad of te weinig ruimte voor een kastfront); het is een waarschuwing, je mag het toch zo laten.</li>
         <li><b>Scenario's</b>: kies een variant, sla je eigen variant op, of deel hem met een link (werkt op elk apparaat). Met <kbd>C</kbd> wissel je tussen twee scenario's.</li>
       </ul>
       <p class="muted small">Concept-visualisatie op basis van de aangeleverde plattegrond. Maten zijn indicatief; controleer vóór bestellen.</p>
     </section>
   </aside>
 
+  <div id="editTools" class="ui" hidden>
+    <button id="edUndo" title="Ongedaan maken (Ctrl+Z)">↶<span> Ongedaan</span></button>
+    <button id="edRedo" title="Opnieuw (Ctrl+Shift+Z)">↷<span> Opnieuw</span></button>
+    <button id="edGrid" class="on" title="Raster van 5 cm aan/uit">▦<span> Raster 5 cm</span></button>
+    <button id="edTop" class="on" title="Bovenaanzicht tijdens bewerken">⬒<span> Bovenaanzicht</span></button>
+    <button id="edAdd" class="primary" title="Item toevoegen">＋ Toevoegen</button>
+    <button id="edWarn" title="Waarschuwingen">✓</button>
+    <button id="edDone" title="Bewerken stoppen">Klaar</button>
+  </div>
+  <div id="editBar" class="ui" hidden></div>
+  <div id="catalog" class="ui" hidden></div>
   <div id="tooltip"></div>
   <div id="toast"></div>
   <input id="importFile" type="file" accept=".json,application/json" hidden>

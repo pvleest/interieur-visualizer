@@ -94,9 +94,56 @@ export function applyPatches(basePlan, patches) {
   return plan;
 }
 
+// ---------- compaction ----------
+// Edit mode produces many small item operations (every drag is a moveItem). Before saving or sharing,
+// fold them: later move/resize/update ops on an item merge into its previous op of the same kind or into
+// the addItem that created it; a removeItem drops the item's earlier edits (and its addItem, if any).
+// The resulting plan is the same as with the full list.
+const ITEM_OPS = new Set(['addItem', 'updateItem', 'moveItem', 'resizeItem', 'removeItem']);
+const idOf = (p) => (p.op === 'addItem' ? p.item?.id : p.id);
+export function compactPatches(patches) {
+  const out = [];
+  const same = (q, id) => ITEM_OPS.has(q.op) && idOf(q) === id;
+  for (const p of normalizePatch(patches).map(clone)) {
+    if (!ITEM_OPS.has(p.op) || p.op === 'addItem' || !p.id) { out.push(p); continue; }
+    const id = p.id;
+    if (p.op === 'removeItem') {
+      let added = false;
+      for (let k = out.length - 1; k >= 0; k--) {
+        const q = out[k];
+        if (!same(q, id)) continue;
+        if (q.op === 'removeItem') break;
+        out.splice(k, 1);
+        if (q.op === 'addItem') { added = true; break; }
+      }
+      if (!added) out.push(p);
+      continue;
+    }
+    let j = out.length - 1;
+    while (j >= 0 && !same(out[j], id)) j--;
+    const prev = j >= 0 ? out[j] : null;
+    try {
+      if (prev && prev.op === 'addItem') { OPS[p.op]({ items: [prev.item] }, p); continue; }
+      if (prev && prev.op === p.op) {
+        if (p.op === 'resizeItem') { prev.size = p.size; continue; }
+        if (p.op === 'updateItem') { prev.set = { ...prev.set, ...p.set }; continue; }
+        if (p.op === 'moveItem' && !(p.by && prev.by && !prev.pos) ) {
+          if (p.pos) { prev.pos = p.pos; delete prev.by; }
+          else if (p.by) prev.pos = [prev.pos[0] + p.by[0], prev.pos[1] + p.by[1]];
+          if (p.rot !== undefined) prev.rot = p.rot;
+          if (p.elev !== undefined) prev.elev = p.elev;
+          continue;
+        }
+      }
+    } catch { /* fall through: keep the op as it is */ }
+    out.push(p);
+  }
+  return out;
+}
+
 // ---------- serialisation / sharing ----------
 export function toScenarioFile(s) {
-  return { format: SCENARIO_FORMAT, version: 1, id: s.id, name: s.name, description: s.description || '', base: s.base, patches: s.patches || [] };
+  return { format: SCENARIO_FORMAT, version: 1, id: s.id, name: s.name, description: s.description || '', base: s.base, patches: compactPatches(s.patches || []) };
 }
 
 export function validateScenario(o) {

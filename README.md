@@ -23,6 +23,7 @@ The demo plan (`plans/vleugel.json`) is an interior design concept for a kitchen
 - **First-person walk mode** (*Rondlopen*): drag to look; W/S walk forward and back, A/D strafe left and right, and ←/→ (or Q/E) turn. On a phone, use the on-screen pad (⟲ turn left, ▲ forward, ⟳ turn right, ▼ back). Walls block you except at doors, sliders and open passages; the closed garage door also blocks. The ceilings are shown in this mode.
 - **Elektra** (toggle chip *Elektra*, or `?elektra=1`): a proposal for wall sockets and connection points (small white wall plates) with labels for type and height. The *Elektra* tab lists every point per room (type, height to the centre of the box, circuit/remark). You can copy it as text or download it as CSV for the electrician. The points live in the base plan with `"layer": "elektra"`, so every scenario inherits them; scenarios move or add points where appliances move.
 - **Kitchen**: the former 292 cm window is a glass sliding door (schuifpui) down to the floor, with the same width and top height.
+- **Edit mode** (*✎ Bewerken*): move, add, resize and delete items yourself; see [Edit mode](#edit-mode-bewerken).
 - **Scenarios**: design variants that you can save, share by link (any device), export and import, and compare A ⇄ B.
 - **Clickable labels** and objects show a details panel with the dimensions (w × d × h). Hovering shows a tooltip.
 - A side panel lists the design choices per room and a table of room and element dimensions.
@@ -76,9 +77,31 @@ Items and rooms can reference a **palette role** instead of a fixed material: `"
 
 These roles are used in `vleugel.json`: `frontBase`, `frontTall`, `frontUpper`, `frontGarage`, `frontUtility`, `wardrobe`, `accent`, `worktop`, `backsplash`, `floorKitchen`, `floorExtension`, `floorGarage`.
 
+## Edit mode (Bewerken)
+
+Click the **✎ Bewerken** chip. The camera switches to a top view of the room you are looking at (the room buttons still work), and the walls go low. The edit toolbar appears at the bottom.
+
+- **Select**: click or tap an item. It gets a green outline (red if there is a problem), and a panel shows its name, type, room, dimensions and position. Click the same spot again to pick the next item there (for example the bench under a wall cabinet). Click an empty floor area or press Esc to deselect.
+- **Move**: drag the item over the floor with the mouse or a finger. It snaps to wall faces and to the edges of neighbouring items (10 cm range). *Raster 5 cm* toggles a 5 cm grid. Items that stand on top (cushions, a worktop on base units) move along.
+- **Rotate** with *⟳ 90°* or the R key. **Duplicate** with *❐ Dupliceer* or Ctrl+D. **Delete** with *🗑 Verwijder* or Delete/Backspace.
+- **Dimensions and material**: the B (width), D (depth), H (height) and *Vanaf vloer* (height above the floor) fields in cm, the name, and the colour role (palette role or material) in the panel.
+- **Add** (*＋ Toevoegen*): a catalogue with hoge kast 60/40, onderkast, bovenkast, ladekast, schoenenkast, open stelling, koelkast, vriezer, wasmachine, droger, fiets, bankje, bed, nachtkastje, tafel, stoel, kruk, plant and strijkplank. The new item is placed on a free spot against a wall (or in the open) in the room you are viewing. If the room is full, it goes in the middle with a warning. When **Elektra** is on, the catalogue also has sockets (single, double, power point, data). Sockets snap to the nearest wall face and are moved and deleted like any other item.
+- **Live checks**: the same checks as `js/layout-checks.mjs` run while you drag. Overlaps, items in a wall, a blocked door swing, the slider zone, the walkway and the 70 cm front clearance show as a red outline, with short Dutch messages in the panel. The other item involved gets an orange outline. The toolbar shows a warning counter. Nothing is ever blocked.
+- **Undo/redo**: *↶ Ongedaan* / *↷ Opnieuw*, or Ctrl+Z / Ctrl+Shift+Z (Ctrl+Y).
+- **Saving**: every change is an `applyEdit` patch on the current scenario (shown as *gewijzigd*). *Opslaan als nieuw scenario*, *Deel link* and export include the changes. Patches are compacted first (`compactPatches` in `js/scenarios.js`): repeated moves and resizes of one item are merged, they are folded into the `addItem` of new items, and an item that is added and then deleted disappears. This keeps the share link short (about 530 characters for a typical edit session).
+- *Klaar* (or the chip) leaves edit mode and restores the walls.
+
+| Selection panel with warnings | Catalogue |
+|---|---|
+| ![](docs/renders/23-bewerken-selectie.png) | ![](docs/renders/24-bewerken-toevoegen.png) |
+
+Regenerate these screenshots with `node tools/render-edit.mjs http://localhost:8765/ docs/renders`.
+
+On a phone the toolbar sits above the room buttons, and the item panel is a compact sheet in the lower half. The top view fits the room in the upper half.
+
 ## Edit API and patch format
 
-`window.viz.applyEdit(patch)` applies a patch to the current scenario and re-renders live. It returns `{ ok: true, ops }` or `{ ok: false, error }`; an invalid patch changes nothing. `window.viz.undo()` reverts the last `applyEdit` batch.
+`window.viz.applyEdit(patch)` applies a patch to the current scenario and re-renders live. It returns `{ ok: true, ops }` or `{ ok: false, error }`; an invalid patch changes nothing. `window.viz.undo()` reverts the last `applyEdit` batch and `window.viz.redo()` re-applies it. `window.viz.editor` exposes the edit mode (`setActive`, `selectById`, `addFromCatalog`, `rotate`, `remove`, `duplicate`, `warnings`).
 
 The same patches are stored in scenarios, so a future natural-language chat front-end only needs to turn text into this JSON. The UI stub for that is the collapsed **Ontwerp aanpassen** panel in the *Scenario's* tab, which has palette pickers, a JSON patch box and a disabled chat field.
 
@@ -126,7 +149,9 @@ python3 -m http.server 8765 &
 node tools/test.mjs http://localhost:8765/   # walk keuken→garage→bijkeuken→slaapkamer, openings, walls, A/D strafe + phone pad, layout checks per scenario, share link
 ```
 
-For the base plan and **every** scenario, `tools/layout-checks.mjs` checks:
+The `test.mjs` suite also covers edit mode. It selects, cycles, drags (mouse), rotates, deletes, adds every catalogue item, undoes and redoes, resizes, duplicates, saves as a scenario, opens the share link in a fresh browser context with an identical plan, checks patch compaction, and does a touch drag in a phone viewport.
+
+For the base plan and **every** scenario, `js/layout-checks.mjs` (shared by the app's live checks and the tests; `tools/layout-checks.mjs` re-exports it) checks:
 - every item lies inside its room;
 - no two items intersect (footprint plus height; worktops on bases and chairs or stools under tables are fine);
 - no item sits inside a wall, including walls added by a scenario;
@@ -271,6 +296,7 @@ Een eenvoudige, data-gedreven **3D-interieurvisualizer** die in de browser draai
 - **Rondlopen**: slepen om rond te kijken, en W/S vooruit en achteruit, A/D opzij naar links en rechts, ←/→ draaien, of de knoppen op je telefoon.
 - **Elektra**: zet de knop *Elektra* aan voor een voorstel met wandcontactdozen en aansluitpunten (witte wandplaatjes met type en hoogte). Het tabblad *Elektra* geeft per ruimte een lijst voor de elektricien (kopiëren of CSV).
 - Keuken: het grote raam is een glazen schuifpui tot de vloer geworden. De loopdeur van de garage naar buiten is een glazen deur, net als de tuindeur van de slaapkamer.
+- **Bewerken**: zet *✎ Bewerken* aan. Je kijkt dan van bovenaf naar de ruimte. Tik of klik op een kast of meubel om het te kiezen, en sleep het naar een andere plek (het klikt vast tegen wanden en buren; *Raster 5 cm* voor een raster). Met *⟳ 90°* (R) draai je het, met *❐ Dupliceer* (Ctrl+D) kopieer je het en met *🗑 Verwijder* (Delete) haal je het weg. In het paneel pas je de breedte, diepte, hoogte en kleur aan. Met *＋ Toevoegen* zet je een nieuwe kast, een apparaat, een fiets, een bed enz. op een vrije plek. Rood betekent dat iets botst, voor een deur of de schuifpui staat, het looppad blokkeert of minder dan 70 cm vrije ruimte voor de fronten heeft. Het is een waarschuwing, geen verbod. *Ongedaan/Opnieuw* (Ctrl+Z / Ctrl+Shift+Z) zet stappen terug of opnieuw. De wijzigingen horen bij het huidige scenario, dus *Opslaan als nieuw scenario* en *Deel link* nemen ze mee. Als Elektra aan staat, kun je ook wandcontactdozen verplaatsen, toevoegen en verwijderen.
 - Klik op een element of label voor de maten en een toelichting. In het paneel staan de ontwerpkeuzes per ruimte en een maattabel.
 
 **Scenario's**: kies een variant of maak je eigen variant via *Ontwerp aanpassen*.

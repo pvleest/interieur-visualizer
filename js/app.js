@@ -4,7 +4,8 @@ import { RoomEnvironment } from '../vendor/addons/RoomEnvironment.js';
 import { CSS2DRenderer } from '../vendor/addons/CSS2DRenderer.js';
 import { buildPlan, SCALE, setWallHeight } from './engine.js';
 import { setMaxAnisotropy, BUILTIN_LABELS, swatchColor, setPlanMaterials } from './materials.js';
-import { applyPatches, normalizePatch, encodeShare, decodeShare, validateScenario, toScenarioFile, loadLocal, saveLocal, OPS } from './scenarios.js';
+import { applyPatches, normalizePatch, encodeShare, decodeShare, validateScenario, toScenarioFile, loadLocal, saveLocal, OPS, compactPatches } from './scenarios.js';
+import { createEditor } from './editor.js';
 
 const params = new URLSearchParams(location.search);
 const PLAN_URL = params.get('plan') || 'plans/vleugel.json';
@@ -68,6 +69,7 @@ let mode = 'orbit';           // orbit | walk
 let wallsMode = 'auto';       // auto | low | high
 let currentView = 'overzicht';
 let selected = null, selHelper = null;
+let editor = null;            // interactive edit mode (js/editor.js)
 let tween = null;
 const walk = { yaw: 0, pitch: -0.08, keys: {}, eye: 1.62 };
 
@@ -128,6 +130,7 @@ let repoScenarios = [];      // [{key, id, name, description, base, patches}]
 let current = null;          // active scenario (with its full patch list)
 let compareWith = null;      // scenario object for A/B toggle
 let history = [];            // undo stack: number of ops per applyEdit batch
+let redoStack = [];          // undone batches (op arrays) for redo
 let dirty = false;
 let lastShareHash = '';
 const builtCache = new Map(); // plan JSON -> built scene (max 3)
@@ -180,6 +183,7 @@ function showPlan(newPlan) {
   updateWalls(0, true);
   applyLayers();
   refreshPanels();
+  editor?.afterShow();
 }
 
 // Electrical layer: socket markers and their labels are only shown with the "Elektra" toggle on.
@@ -229,7 +233,7 @@ async function loadScenario(sc, { initial = false } = {}) {
   const base = await fetchPlan(sc.base || PLAN_URL);
   const newPlan = applyPatches(base, sc.patches || []);
   current = { ...sc, patches: [...(sc.patches || [])] };
-  history = []; dirty = false;
+  history = []; redoStack = []; dirty = false;
   if (compareWith && compareWith.key === current.key) compareWith = null;
   showPlan(newPlan);
   if (!initial && !RENDER_MODE) toast(`Scenario: ${current.name}`);
@@ -238,13 +242,14 @@ async function loadScenario(sc, { initial = false } = {}) {
 // ---------- edit API ----------
 // applyEdit(patch): patch = one operation, an array of operations or {ops:[...]}
 // (format: see README "Patch format"). Applies live; returns {ok, error?}.
-function applyEdit(patch) {
+function applyEdit(patch, { keepRedo = false } = {}) {
   const ops = normalizePatch(typeof patch === 'string' ? JSON.parse(patch) : patch);
   if (!ops.length) return { ok: false, error: 'Lege patch' };
   let next;
   try { next = applyPatches(plan, ops); } catch (e) { return { ok: false, error: e.message }; }
   current.patches.push(...structuredClone(ops));
   history.push(ops.length);
+  if (!keepRedo) redoStack = [];
   dirty = true;
   showPlan(next);
   return { ok: true, ops: ops.length };
@@ -253,12 +258,17 @@ function applyEdit(patch) {
 async function undoEdit() {
   if (!history.length) return { ok: false, error: 'Niets om ongedaan te maken' };
   const n = history.pop();
-  current.patches.splice(current.patches.length - n, n);
+  redoStack.push(current.patches.splice(current.patches.length - n, n));
   const base = await fetchPlan(current.base || PLAN_URL);
   showPlan(applyPatches(base, current.patches));
   dirty = history.length > 0;
   refreshPanels();
   return { ok: true };
+}
+
+function redoEdit() {
+  if (!redoStack.length) return { ok: false, error: 'Niets om opnieuw te doen' };
+  return applyEdit(redoStack.pop(), { keepRedo: true });
 }
 
 // ---------- UI ----------
@@ -268,7 +278,11 @@ function buildNav() {
   for (const [id, v] of Object.entries(plan.views || {})) {
     const b = document.createElement('button');
     b.textContent = v.label || id; b.dataset.view = id;
-    b.onclick = () => { if (mode === 'walk') stopWalk(); goView(id); };
+    b.onclick = () => {
+      if (mode === 'walk') stopWalk();
+      if (editor?.active() && editor.topOn()) { currentView = id; editor.topView(id in roomsById() ? id : null); setActiveNav(id); return; }
+      goView(id);
+    };
     nav.appendChild(b);
   }
   const wb = document.createElement('button');
@@ -287,7 +301,7 @@ function buildUIStatic() {
     e.target.textContent = 'Wanden: ' + { auto: 'auto', low: 'laag', high: 'hoog' }[wallsMode];
   };
   $('#tElektra').classList.toggle('on', elektraOn);
-  $('#tElektra').onclick = () => { elektraOn = !elektraOn; $('#tElektra').classList.toggle('on', elektraOn); applyLayers(); if (elektraOn) showTab('elektra'); };
+  $('#tElektra').onclick = () => { elektraOn = !elektraOn; $('#tElektra').classList.toggle('on', elektraOn); applyLayers(); editor?.afterShow(); if (elektraOn && !editor?.active()) showTab('elektra'); };
   $('#tPanel').onclick = () => { app.classList.toggle('panel-open'); $('#tPanel').classList.toggle('on', app.classList.contains('panel-open')); };
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
   $('#tScenario').onclick = () => { showTab('scen'); if (window.innerWidth <= 820 && !app.classList.contains('panel-open')) $('#tPanel').click(); };
@@ -415,6 +429,7 @@ function pick(clientX, clientY) {
 function itemName(it) { return it.label || TYPE_NAMES[it.type] || it.type; }
 
 function selectItem(g) {
+  if (g && editor?.active()) { editor.select(g); return; }
   selected = g;
   if (selHelper) { scene.remove(selHelper); selHelper = null; }
   document.querySelectorAll('.item-label.sel').forEach(e => e.classList.remove('sel'));
@@ -446,6 +461,7 @@ let downAt = null;
 renderer.domElement.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY, performance.now()]; });
 renderer.domElement.addEventListener('pointerup', (e) => {
   if (!downAt) return;
+  if (editor?.active()) { downAt = null; return; }
   const moved = Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]);
   if (moved < 6 && performance.now() - downAt[2] < 500) {
     const g = pick(e.clientX, e.clientY);
@@ -734,10 +750,10 @@ function saveAsNew() {
   const name = prompt('Naam van het nieuwe scenario:', current.key === 'base' ? 'Mijn variant' : `${current.name} (variant)`);
   if (!name || !name.trim()) return;
   const list = loadLocal();
-  const sc = { id: 's' + Date.now().toString(36), name: name.trim(), description: current.description || '', base: current.base || PLAN_URL, patches: structuredClone(current.patches), savedAt: new Date().toISOString() };
+  const sc = { id: 's' + Date.now().toString(36), name: name.trim(), description: current.description || '', base: current.base || PLAN_URL, patches: compactPatches(current.patches), savedAt: new Date().toISOString() };
   list.push(sc); saveLocal(list);
   current = { ...sc, key: 'local:' + sc.id, patches: structuredClone(sc.patches) };
-  dirty = false; history = [];
+  dirty = false; history = []; redoStack = [];
   refreshPanels();
   toast(`Opgeslagen als "${sc.name}" (op dit apparaat). Gebruik "Deel link" voor een ander apparaat.`);
 }
@@ -746,7 +762,7 @@ function saveCurrentLocal() {
   const list = loadLocal();
   const i = list.findIndex((x) => 'local:' + x.id === current.key);
   if (i < 0) return saveAsNew();
-  list[i] = { ...list[i], patches: structuredClone(current.patches), savedAt: new Date().toISOString() };
+  list[i] = { ...list[i], patches: compactPatches(current.patches), savedAt: new Date().toISOString() };
   saveLocal(list); dirty = false; history = []; refreshPanels(); toast('Scenario opgeslagen');
 }
 
@@ -815,6 +831,43 @@ window.viz = {
   tryMove, roomAt, walkable, goView: (id) => goView(id, true),
   setPose: (x, z, yawDeg = 0) => { camera.position.x = x * SCALE; camera.position.z = z * SCALE; walk.yaw = THREE.MathUtils.degToRad(yawDeg); walk.pitch = 0; },
   position: () => ({ x: camera.position.x / SCALE, z: camera.position.z / SCALE, yaw: THREE.MathUtils.radToDeg(walk.yaw), room: roomAt(camera.position.x / SCALE, camera.position.z / SCALE) }),
+};
+
+// ---------- edit mode ----------
+function setWallsMode(m) {
+  const prev = wallsMode;
+  wallsMode = m;
+  $('#tWalls').textContent = 'Wanden: ' + { auto: 'auto', low: 'laag', high: 'hoog' }[wallsMode];
+  return prev;
+}
+function materialOptions() {
+  const pal = plan.palette || {};
+  return [
+    ...PALETTE_ROLES.filter(([r]) => r in pal).map(([r, l]) => ['@' + r, `Kleurrol: ${l}`]),
+    ...[...BUILTIN_CHOICES, ...Object.keys(plan.materials || {})].map((m) => [m, materialLabel(m)]),
+  ];
+}
+editor = createEditor({
+  camera, controls, renderer, scene, SCALE,
+  getPlan: () => plan, getBuilt: () => built,
+  applyEdit: (ops) => applyEdit(ops), undo: () => undoEdit(), redo: () => redoEdit(),
+  canUndo: () => history.length > 0, canRedo: () => redoStack.length > 0,
+  getRoute: () => current?.checks?.route || null,
+  elektraOn: () => elektraOn, toast, itemName, typeName: (it) => TYPE_NAMES[it.type] || it.type,
+  materialOptions, currentView: () => currentView, mode: () => mode,
+  goView: (id) => goView(id), stopWalk: () => { if (mode === 'walk') stopWalk(); },
+  setWallsMode, closePanel: () => { if (app.classList.contains('panel-open')) $('#tPanel').click(); },
+  flyTo: (pos, target) => { tween = { t: 0, dur: 0.8, fromPos: camera.position.clone(), fromT: controls.target.clone(), toPos: cm(pos), toTarget: cm(target) }; },
+});
+window.viz.redo = redoEdit;
+window.viz.idle = () => !tween;
+window.viz.editor = editor;
+window.viz.screenPos = (id) => {
+  const g = built.items.find((x) => x.userData.item.id === id);
+  if (!g) return null;
+  const c = new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3()).project(camera);
+  const r = renderer.domElement.getBoundingClientRect();
+  return { x: r.left + ((c.x + 1) / 2) * r.width, y: r.top + ((1 - c.y) / 2) * r.height };
 };
 
 init().catch((e) => { console.error(e); $('#loading').innerHTML = '<span>Kon het model niet laden: ' + e.message + '</span>'; });

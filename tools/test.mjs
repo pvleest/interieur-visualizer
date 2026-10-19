@@ -5,6 +5,8 @@ import { checkPlan } from './layout-checks.mjs';
 const base = process.argv[2] || 'http://localhost:8765/';
 const browser = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 let failures = 0;
+// key-order independent JSON (compacted patches may add keys in another order)
+const canon = (o) => JSON.stringify(o, (k, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1))) : v));
 const check = (cond, msg) => { console.log((cond ? 'PASS ' : 'FAIL ') + msg); if (!cond) failures++; };
 
 async function open(url, vp = { viewport: { width: 1280, height: 800 } }) {
@@ -201,9 +203,129 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   await p2.goto(share.replace(/^[^#]*#/, base.replace(/#.*$/, '') + '#'), { waitUntil: 'load' });
   await p2.waitForFunction(() => window.__ready === true, null, { timeout: 120000 });
   const after = await p2.evaluate(() => JSON.stringify(window.viz.getPlan()));
-  check(after === before, 'shared link reproduces the exact plan on another device');
+  check(canon(JSON.parse(after)) === canon(JSON.parse(before)), 'shared link reproduces the exact plan on another device');
   check(errs2.length === 0, 'no JS errors on shared-link page ' + (errs2.length ? JSON.stringify(errs2) : ''));
   await ctx.close();
+}
+
+// 7. interactive edit mode: select, drag (mouse), rotate, delete, add from the catalogue, undo/redo,
+//    save as scenario, share link in a fresh context, touch drag on a phone
+{
+  const { page, errs } = await open(base + '?view=garage');
+  const item = (id) => page.evaluate((id) => window.viz.getPlan().items.find((i) => i.id === id) || null, id);
+  const idle = () => page.waitForFunction(() => window.viz.idle(), null, { timeout: 60000 });
+  await page.click('#tEdit');
+  await idle();
+  check(await page.evaluate(() => window.viz.editor.active() && !document.querySelector('#editTools').hidden), 'edit mode: Bewerken toggles the edit toolbar');
+  const bench0 = await item('garage-schoenenbank'), cushion0 = await item('garage-bankkussen');
+  const sp = await page.evaluate(() => window.viz.screenPos('garage-schoenenbank'));
+  // first click selects the top item at that spot (the hat shelf hangs above the bench); clicking again cycles down
+  const picked = [];
+  for (let k = 0; k < 4; k++) {
+    await page.mouse.click(sp.x, sp.y); await page.waitForTimeout(150);
+    picked.push(await page.evaluate(() => window.viz.editor.selected()));
+    if (picked.at(-1) === 'garage-schoenenbank') break;
+  }
+  check(picked.at(-1) === 'garage-schoenenbank', 'edit mode: click selects, clicking again cycles through stacked items: ' + picked.join(' → '));
+  await page.mouse.move(sp.x, sp.y); await page.mouse.down();
+  await page.mouse.move(sp.x + 30, sp.y - 45, { steps: 10 }); await page.mouse.up();
+  await page.waitForFunction(() => window.viz.getPlan().items.find((i) => i.id === 'garage-schoenenbank').pos[1] !== 291, null, { timeout: 20000 }).catch(() => {});
+  const bench1 = await item('garage-schoenenbank'), cushion1 = await item('garage-bankkussen');
+  const sel1 = await page.evaluate(() => window.viz.editor.selected());
+  const moved = bench1.pos[0] !== bench0.pos[0] || bench1.pos[1] !== bench0.pos[1];
+  const sameDelta = Math.abs((cushion1.pos[0] - cushion0.pos[0]) - (bench1.pos[0] - bench0.pos[0])) < 0.2 && Math.abs((cushion1.pos[1] - cushion0.pos[1]) - (bench1.pos[1] - bench0.pos[1])) < 0.2;
+  check(sel1 === 'garage-schoenenbank' && moved && sameDelta, `edit mode: mouse drag selects + moves the bench (${bench0.pos} → ${bench1.pos}), its cushion moves along`);
+  const warn1 = await page.evaluate(() => ({ w: window.viz.editor.warnings(), bad: document.querySelector('#edWarn').classList.contains('bad'), panel: document.querySelector('#editBar .eb-warn').textContent }));
+  check(warn1.w.length > 0 && warn1.bad && /looppad|doorgang/.test(warn1.panel), 'edit mode: live warning in Dutch when the bench lands on the walkway: ' + warn1.w.join(' | '));
+  await page.keyboard.press('KeyR');
+  await page.waitForTimeout(300);
+  const bench2 = await item('garage-schoenenbank'), cushion2 = await item('garage-bankkussen');
+  check(bench2.rot === -90 && cushion2.rot === -90, `edit mode: R rotates 90° (bench ${bench0.rot} → ${bench2.rot}, cushion ${cushion2.rot})`);
+  await page.keyboard.press('Delete');
+  await page.waitForTimeout(300);
+  check(!(await item('garage-schoenenbank')) && !(await item('garage-bankkussen')) && !(await page.evaluate(() => window.viz.editor.selected())), 'edit mode: Delete removes the bench and its cushion');
+  await page.click('#edAdd');
+  await page.click('#catalog button[data-key="hoog60"]');
+  await page.waitForTimeout(300);
+  const added = await page.evaluate(() => { const id = window.viz.editor.selected(); return { id, it: window.viz.getPlan().items.find((i) => i.id === id), w: window.viz.editor.warnings() }; });
+  check(added.it && added.it.type === 'tall' && added.it.room === 'garage' && added.w.length === 0, `edit mode: catalogue adds "Hoge kast 60" in the viewed room on a free spot (${added.id} @ ${added.it?.pos}, rot ${added.it?.rot || 0}, ${added.w.length} warnings)`);
+  const keys = await page.evaluate(() => window.viz.editor.catalog());
+  const fits = [];
+  for (const k of keys.filter((k) => !['wcd2', 'wcd1', 'laad', 'perilex'].includes(k))) {
+    const r = await page.evaluate((k) => { const r = window.viz.editor.addFromCatalog(k, 'slaapkamer'); return { ok: r.ok, w: window.viz.editor.warnings(r.id) }; }, k);
+    fits.push(k + (r.ok ? (r.w.length ? '⚠' : '') : '✗'));
+    await page.evaluate(() => window.viz.undo());
+  }
+  check(fits.every((f) => !f.includes('✗')), 'edit mode: every catalogue item can be added (slaapkamer): ' + fits.join(' '));
+  await page.keyboard.press('Control+KeyZ'); await page.waitForTimeout(300);
+  const afterUndo = await item(added.id);
+  await page.keyboard.press('Control+Shift+KeyZ'); await page.waitForTimeout(300);
+  const afterRedo = await item(added.id);
+  await page.keyboard.press('Control+KeyZ'); await page.waitForTimeout(300);
+  check(!afterUndo && afterRedo && !(await item(added.id)), 'edit mode: Ctrl+Z / Ctrl+Shift+Z undo and redo the catalogue item');
+  // add it again via the toolbar + duplicate, then save as scenario and share
+  await page.click('#edAdd');
+  await page.click('#catalog button[data-key="fiets"]');
+  await page.waitForTimeout(300);
+  const bikeId = await page.evaluate(() => window.viz.editor.selected());
+  await page.keyboard.press('Control+KeyD'); await page.waitForTimeout(300);
+  const dupId = await page.evaluate(() => window.viz.editor.selected());
+  check(bikeId && dupId && dupId !== bikeId && (await item(dupId))?.type === 'bike', `edit mode: Ctrl+D duplicates (${bikeId} → ${dupId})`);
+  // resize + material from the panel
+  await page.fill('#ebW', '200'); await page.press('#ebW', 'Enter'); await page.waitForTimeout(300);
+  check((await item(dupId)).size[0] === 200, 'edit mode: width input resizes the item');
+  const nPatches = await page.evaluate(() => window.viz.getScenario().patches.length);
+  page.once('dialog', (d) => d.accept('Test bewerken'));
+  await page.evaluate(() => document.querySelector('#scenSaveNew').click());
+  await page.waitForTimeout(300);
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('interieur-visualizer.scenarios.v1') || '[]').find((s) => s.name === 'Test bewerken'));
+  check(saved && saved.patches.length === nPatches, `edit mode: "Opslaan als nieuw scenario" stores the edits (${saved?.patches.length} compacted patches)`);
+  await page.evaluate(() => document.querySelector('#scenShare').click());
+  await page.waitForTimeout(300);
+  const url = await page.evaluate(() => document.querySelector('#scenShareUrl').value);
+  const planA = await page.evaluate(() => window.viz.getPlan());
+  check(url.includes('#s=') && url.length < 2500, `edit mode: share link length ${url.length} chars`);
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const p3 = await ctx.newPage();
+  const errs3 = []; p3.on('pageerror', (e) => errs3.push(e.message));
+  await p3.goto(base.replace(/#.*$/, '') + url.slice(url.indexOf('#')), { waitUntil: 'load' });
+  await p3.waitForFunction(() => window.__ready === true, null, { timeout: 120000 });
+  const planB = await p3.evaluate(() => window.viz.getPlan());
+  check(canon(planA) === canon(planB) && errs3.length === 0, 'edit mode: share link reproduces the edited plan in a fresh browser context');
+  await ctx.close();
+  // compaction keeps the plan identical
+  const cmp = await page.evaluate(async () => {
+    const m = await import('./js/scenarios.js');
+    const s = window.viz.getScenario();
+    const raw = [{ op: 'moveItem', id: 'garage-fiets-1', pos: [500, 90] }, { op: 'moveItem', id: 'garage-fiets-1', pos: [505, 95], rot: 90 }, { op: 'addItem', item: { id: 'x-kast', type: 'tall', room: 'garage', pos: [100, 100], size: [60, 60, 200] } }, { op: 'moveItem', id: 'x-kast', pos: [120, 100] }, { op: 'resizeItem', id: 'x-kast', size: [40, 60, 200] }, { op: 'addItem', item: { id: 'y', type: 'plant', room: 'garage', pos: [50, 50], size: [30, 30, 80] } }, { op: 'removeItem', id: 'y' }, { op: 'updateItem', id: 'garage-fiets-2', set: { color: '#111' } }, { op: 'updateItem', id: 'garage-fiets-2', set: { label: 'X' } }];
+    const c = m.compactPatches(raw);
+    return { n: raw.length, c: c.length };
+  });
+  check(cmp.c === 3, `patch compaction folds edits (${cmp.n} → ${cmp.c} ops)`);
+  check(errs.length === 0, 'no JS errors in edit mode ' + (errs.length ? JSON.stringify(errs) : ''));
+  await page.close();
+
+  // phone: touch drag
+  const pctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+  const pp = await pctx.newPage();
+  const perrs = []; pp.on('pageerror', (e) => perrs.push(e.message));
+  await pp.goto(base + '?view=garage', { waitUntil: 'load' });
+  await pp.waitForFunction(() => window.__ready === true, null, { timeout: 120000 });
+  await pp.tap('#tEdit');
+  await pp.waitForFunction(() => window.viz.idle(), null, { timeout: 60000 });
+  const id = 'garage-schoenenkast';
+  const t0 = await pp.evaluate((id) => window.viz.getPlan().items.find((i) => i.id === id).pos, id);
+  const tp = await pp.evaluate((id) => window.viz.screenPos(id), id);
+  const cdp = await pctx.newCDPSession(pp);
+  const touch = (type, x, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+  await touch('touchStart', tp.x, tp.y);
+  for (let k = 1; k <= 10; k++) { await touch('touchMove', tp.x + k * 4, tp.y + k * 2); await pp.waitForTimeout(30); }
+  await touch('touchEnd');
+  await pp.waitForTimeout(500);
+  const t1 = await pp.evaluate((id) => ({ pos: window.viz.getPlan().items.find((i) => i.id === id).pos, sel: window.viz.editor.selected(), bar: !document.querySelector('#editBar').hidden }), id);
+  check(t1.sel === id && (t1.pos[0] !== t0[0] || t1.pos[1] !== t0[1]) && t1.bar, `edit mode (phone): touch drag selects and moves the shoe cabinet (${t0} → ${t1.pos})`);
+  check(perrs.length === 0, 'no JS errors in phone edit mode ' + (perrs.length ? JSON.stringify(perrs) : ''));
+  await pctx.close();
 }
 await browser.close();
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
