@@ -42,24 +42,24 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
 {
   const { page, errs } = await open(base);
   // 1. scripted walk keuken -> garage -> bijkeuken -> slaapkamer
-  const r = await WALK(page, [475, 610], [[280, 460], [280, 250], [100, 252], [-100, 252], [-200, 322], [-420, 322], [-560, 250]]);
+  const r = await WALK(page, [475, 610], [[280, 460], [280, 250], [100, 185], [-100, 178], [-200, 247], [-420, 247], [-560, 175]]);
   console.log('  visited:', r.visited.join(' -> '), ' end:', JSON.stringify(r.end));
   check(JSON.stringify(r.visited) === JSON.stringify(['keuken', 'garage', 'bijkeuken', 'slaapkamer']), 'walk path visits keuken -> garage -> bijkeuken -> slaapkamer');
-  check(Math.hypot(r.end.x + 560, r.end.z - 250) < 5, 'walk reaches the target point in the bedroom');
+  check(Math.hypot(r.end.x + 560, r.end.z - 175) < 5, 'walk reaches the target point in the bedroom');
   // and back again
-  const back = await WALK(page, [-560, 250], [[-420, 322], [-200, 322], [-100, 252], [100, 252], [280, 250], [280, 460], [475, 610]]);
+  const back = await WALK(page, [-560, 175], [[-420, 247], [-200, 247], [-100, 178], [100, 185], [280, 250], [280, 460], [475, 610]]);
   check(JSON.stringify(back.visited) === JSON.stringify(['slaapkamer', 'bijkeuken', 'garage', 'keuken']), 'walk back slaapkamer -> keuken (' + back.visited.join(' -> ') + ')');
   // 2. exterior / living-room openings
   const living = await WALK(page, [590, 600], [[590, 760]]);
   check(living.end.z > 740, 'keuken -> woonkamer opening is walkable');
-  const slider = await WALK(page, [-150, 330], [[-150, 480]]);
-  check(slider.end.z > 460, 'bijkeuken schuifpui is walkable');
-  const gdoor = await WALK(page, [-440, 330], [[-440, 480]]);
-  check(gdoor.end.z > 460, 'slaapkamer tuindeur is walkable');
-  const entree = await WALK(page, [75, 250], [[75, 380]]);
+  const slider = await WALK(page, [-150, 255], [[-150, 405]]);
+  check(slider.end.z > 385, 'bijkeuken schuifpui is walkable');
+  const gdoor = await WALK(page, [-440, 255], [[-440, 405]]);
+  check(gdoor.end.z > 385, 'slaapkamer tuindeur is walkable');
+  const entree = await WALK(page, [60, 250], [[60, 380]]);
   check(entree.end.z > 360, 'entreedeur garage (90 cm) is walkable');
-  const raam = await WALK(page, [-616, 330], [[-616, 480]]);
-  check(raam.end.z < 380, 'slaapkamer raam tot de vloer blocks (z=' + raam.end.z.toFixed(0) + ')');
+  const raam = await WALK(page, [-616, 255], [[-616, 405]]);
+  check(raam.end.z < 305, 'slaapkamer raam tot de vloer blocks (z=' + raam.end.z.toFixed(0) + ')');
   // 3. walls still block
   const wall = await WALK(page, [400, 200], [[400, -200]]);
   check(wall.end.z > 0, 'garage north wall blocks (z=' + wall.end.z.toFixed(0) + ')');
@@ -107,7 +107,7 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   // 4b. layout checks for the base plan and every scenario: inside rooms, no intersections, no furniture in walls,
   // door leaves and doorways clear, garage walkway >= 120 cm and free, hard requirements, and a walkable route
   // keuken -> garage -> bijkeuken -> slaapkamer that also keeps 50 cm clear of furniture.
-  const DEFAULT_ROUTE = [[300, 450], [280, 380], [280, 250], [100, 252], [-100, 252], [-200, 305], [-420, 322], [-420, 330], [-500, 330], [-500, 240]];
+  const DEFAULT_ROUTE = [[300, 450], [280, 380], [280, 250], [100, 190], [-100, 178], [-200, 230.4], [-420, 247.4], [-420, 255.4], [-500, 255.4], [-500, 165.4]];
   const idx = await (await fetch(new URL('scenarios/index.json', base))).json();
   const routes = { base: DEFAULT_ROUTE };
   for (const e of idx.scenarios) routes['repo:' + e.id] = (await (await fetch(new URL(e.file, base))).json()).checks?.route || DEFAULT_ROUTE;
@@ -127,7 +127,7 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   }
   // the walk-in partition is a real wall: walking through it from the bed side is blocked
   await page.evaluate(() => window.viz.loadScenario('repo:slaapkamer-inloopkast'));
-  const part = await WALK(page, [-560, 200], [[-680, 200]]);
+  const part = await WALK(page, [-560, 125], [[-680, 125]]);
   check(part.end.x > -600, 'inloopkast: new partition wall blocks walking (x=' + part.end.x.toFixed(0) + ')');
   await page.evaluate(() => window.viz.stopWalk());
   // the checker itself catches mistakes
@@ -135,9 +135,11 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   const broken = structuredClone(basePlan);
   broken.items.find((i) => i.id === 'keuken-ronde-tafel-80').pos = [405, 380];
   broken.items.find((i) => i.id === 'bijkeuken-wasmachine').pos = [-317, 260];
-  broken.items.find((i) => i.id === 'garage-open-stelling-kratten').pos = [200, 250];
+  broken.items.find((i) => i.id === 'garage-schoenenbank').pos = [200, 200];
+  broken.items = broken.items.filter((i) => i.id !== 'garage-fiets-2');
+  broken.items.find((i) => i.id === 'garage-laadpunt').pos = [400, 2];
   const caught = checkPlan(broken, { route: DEFAULT_ROUTE });
-  check(caught.some((m) => m.startsWith('overlap')) && caught.some((m) => m.includes('slaapkamerwand')) && caught.some((m) => m.includes('looppad')), 'layout checker detects overlap, machine against bedroom wall and blocked walkway (' + caught.length + ' issues)');
+  check(caught.some((m) => m.startsWith('overlap')) && caught.some((m) => m.includes('slaapkamerwand')) && caught.some((m) => m.includes('looppad')) && caught.some((m) => m.includes('fietsen')) && caught.some((m) => m.includes('stopcontact')), 'layout checker detects overlap, machine against bedroom wall, blocked walkway, missing bike and e-bike far from socket (' + caught.length + ' issues)');
 
   // 5. scenarios + edit API
   const list = await page.evaluate(() => window.viz.listScenarios().map((s) => s.name));

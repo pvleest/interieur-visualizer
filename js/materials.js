@@ -137,6 +137,29 @@ export function textures() {
       noiseLayer(g, s, r, 2, 10, 40, 'rgba(255,255,255,A)', 0.25);
     }
   }, { repeat: 2 });
+  // Large-format floor tiles, 120 × 60 cm in a half-offset bond, warm grey concrete look.
+  // The canvas covers 240 × 240 cm (repeat 1/2.4 because floor UVs are in metres).
+  T.tileLarge = canvasTex(1024, (g, s) => {
+    const r = rng(83);
+    const tw = s / 2, th = s / 4, grout = 2;
+    g.fillStyle = '#625d57'; g.fillRect(0, 0, s, s);
+    for (let j = 0; j < 4; j++) {
+      const off = j % 2 ? tw / 2 : 0;
+      for (let i = -1; i < 2; i++) {
+        const x = i * tw + off, y = j * th;
+        const v = Math.floor(r() * 14) - 7;
+        g.fillStyle = `rgb(${108 + v},${102 + v},${95 + v})`;
+        g.fillRect(x + grout / 2, y + grout / 2, tw - grout, th - grout);
+      }
+    }
+    noiseLayer(g, s, r, 160, 40, 200, 'rgba(118,112,104,A)', 0.22);
+    noiseLayer(g, s, r, 120, 40, 200, 'rgba(170,164,154,A)', 0.18);
+    speckle(g, s, r, 7000, ['rgba(110,104,96,0.25)', 'rgba(225,220,210,0.3)'], 1.3);
+    // redraw grout lines on top so the noise does not hide them
+    g.fillStyle = 'rgba(92,88,82,0.9)';
+    for (let j = 0; j <= 4; j++) g.fillRect(0, j * th - grout / 2, s, grout);
+    for (let j = 0; j < 4; j++) { const off = j % 2 ? tw / 2 : 0; for (let i = 0; i < 3; i++) g.fillRect(((i * tw + off) % s) - grout / 2, j * th, grout, th); }
+  }, { repeat: 1 / 2.4 });
   T.pegboard = canvasTex(512, (g, s) => {
     g.fillStyle = '#2b2b2b'; g.fillRect(0, 0, s, s);
     g.fillStyle = '#111';
@@ -210,6 +233,7 @@ export function materials() {
     concrete: std({ map: t.concrete, roughness: 0.55 }),
     epoxy: std({ map: t.epoxy, roughness: 0.45 }),
     tile: std({ map: t.tile, roughness: 0.4 }),
+    tileLarge: std({ map: t.tileLarge, roughness: 0.62 }),
   };
   M.walkway = new THREE.MeshBasicMaterial({ color: 0x1db954, transparent: true, opacity: 0.18, depthWrite: false });
   M.ready = true;
@@ -220,7 +244,7 @@ export function materials() {
 export const BUILTIN_LABELS = {
   oak: 'Mat eiken', oakDark: 'Donker eiken', greige: 'Warm greige', greigeLight: 'Licht greige', black: 'Zwart',
   composite: 'Licht composiet', tile: 'Greige tegel', steel: 'RVS', linen: 'Linnen',
-  planks: 'Eiken plankenvloer', concrete: 'Grijze gietvloer', epoxy: 'Epoxy grijs',
+  planks: 'Eiken plankenvloer', concrete: 'Grijze gietvloer', epoxy: 'Epoxy grijs', tileLarge: 'Tegel 60×120 warm grijs',
 };
 
 // Per-plan material context: palette roles ("@frontBase" -> "greige") and
@@ -275,5 +299,5 @@ export function swatchColor(nameIn) {
   const name = resolveName(nameIn);
   if (customDefs[name]) return customDefs[name].color || '#ccc';
   return { oak: '#c9a57c', oakDark: '#9c7652', greige: '#bcae9b', greigeLight: '#d8cdbd', black: '#1b1b1b', composite: '#ece8e1', tile: '#d7d0c4',
-    steel: '#c4c4c2', linen: '#ddd4c6', planks: '#cfae86', concrete: '#a3a19c', epoxy: '#7d8084' }[name] || (String(name).startsWith('#') ? name : '#ccc');
+    steel: '#c4c4c2', tileLarge: '#aca59b', linen: '#ddd4c6', planks: '#cfae86', concrete: '#a3a19c', epoxy: '#7d8084' }[name] || (String(name).startsWith('#') ? name : '#ccc');
 }

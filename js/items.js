@@ -497,6 +497,34 @@ function stool(spec) {
   return g;
 }
 
+// Staggered floor bike rack (high/low wheel slots). size: [length, depth, height]; `slots` positions along x.
+function bikeRack(spec) {
+  const g = new THREE.Group();
+  const M = materials();
+  const [w, d, h] = spec.size;
+  B(g, w, 3, 4, M.black, 0, 0, -d / 2 + 6);
+  B(g, w, 3, 4, M.black, 0, 0, d / 2 - 6);
+  const slots = spec.slots || [];
+  slots.forEach((x, i) => {
+    const hi = i % 2 ? h : h * 0.55;
+    B(g, 2, hi, 2, M.black, x - 4, 0, -d / 2 + 8);
+    B(g, 2, hi, 2, M.black, x + 4, 0, -d / 2 + 8);
+    B(g, 10, 2, d - 12, M.steel, x, hi * 0.35, 0, { cast: false });
+  });
+  return g;
+}
+
+// Wall socket / e-bike charging point (size: [w, d, h]).
+function socket(spec) {
+  const g = new THREE.Group();
+  const M = materials();
+  const [w, d, h] = spec.size;
+  B(g, w, h, d, mat('#f4f4f2'), 0, 0, 0, { rounded: 0.6 });
+  cyl(g, 1.2, 1.2, 0.6, M.black, -w * 0.2, h * 0.5, d / 2).rotation.x = Math.PI / 2;
+  B(g, w * 0.3, 1.2, 0.4, mat('#2fbf5b'), w * 0.2, h * 0.75, d / 2 + 0.1, { cast: false });
+  return g;
+}
+
 function garageCar(spec) { // optional ghost car volume
   const g = new THREE.Group();
   const [w, d, h] = spec.size;
@@ -522,7 +550,7 @@ export const BUILDERS = {
   basketDrawers, openShelf, workbench, ironingCabinet,
   ledStrip, walkway, bed,
   nightstand: floatingBox, wallLight, pendant, rug, curtain, slatPanel, table, chair, plant, rail,
-  car: garageCar, bike, stool,
+  car: garageCar, bike, stool, bikeRack, socket,
 };
 
 export function buildItem(spec) {

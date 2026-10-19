@@ -12,7 +12,7 @@ const RENDER_MODE = params.get('ui') === '0';
 const TYPE_NAMES = {
   base: 'Onderkast', tall: 'Hoge kast', wall: 'Bovenkast', wardrobe: 'Inbouwkast', plinth: 'Verhoging', fridge: 'Koelkast', freezer: 'Vriezer',
   ovenColumn: 'Oven-kolom', dishwasher: 'Vaatwasser', worktop: 'Werkblad', sink: 'Spoelbak', hob: 'Kookplaat', hood: 'Afzuigkap', panel: 'Paneel',
-  washer: 'Wasmachine', dryer: 'Droger', basketDrawers: 'Wasmandlades', openShelf: 'Open stelling', workbench: 'Werkplek', ironingCabinet: 'Strijkkast',
+  washer: 'Wasmachine', dryer: 'Droger', basketDrawers: 'Wasmandlades', openShelf: 'Open stelling', workbench: 'Werkplek', ironingCabinet: 'Strijkkast', bike: 'Fiets', bikeRack: 'Fietsenrek', socket: 'Stopcontact', stool: 'Barkruk',
   ledStrip: 'LED-strip', walkway: 'Looppad', bed: 'Bed', nightstand: 'Nachtkastje', wallLight: 'Wandlamp', pendant: 'Hanglamp', rug: 'Vloerkleed',
   curtain: 'Gordijn', slatPanel: 'Lamellenwand', table: 'Tafel', chair: 'Stoel', plant: 'Plant', rail: 'Kledingroede', car: 'Auto',
 };
@@ -584,7 +584,7 @@ const PALETTE_ROLES = [
   ['accent', 'Accenten (bed, stelling, tafel)'], ['worktop', 'Werkblad'], ['backsplash', 'Achterwand keuken'],
   ['floorKitchen', 'Vloer keuken'], ['floorExtension', 'Vloer aanbouw'], ['floorGarage', 'Vloer garage'],
 ];
-const BUILTIN_CHOICES = ['oak', 'oakDark', 'greige', 'greigeLight', 'black', 'composite', 'tile', 'planks', 'concrete', 'epoxy'];
+const BUILTIN_CHOICES = ['oak', 'oakDark', 'greige', 'greigeLight', 'black', 'composite', 'tile', 'planks', 'concrete', 'epoxy', 'tileLarge'];
 
 function scenarioOptionsHtml(selectedKey, excludeKey) {
   const opt = (sc) => sc.key === excludeKey ? '' : `<option value="${esc(sc.key)}" ${sc.key === selectedKey ? 'selected' : ''}>${esc(sc.name)}</option>`;

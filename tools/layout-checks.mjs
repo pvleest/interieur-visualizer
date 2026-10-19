@@ -3,7 +3,7 @@
 // All coordinates in cm; x = east, z = south; item rot 0 = front faces +z.
 
 const SKIP = new Set(['rug', 'walkway', 'ledStrip', 'wallLight', 'pendant', 'curtain', 'sink', 'hob']);
-const ALLOWED_PAIRS = [['table', 'chair'], ['table', 'stool']];
+const ALLOWED_PAIRS = [['table', 'chair'], ['table', 'stool'], ['bike', 'bikeRack']];
 const TOL = 1.01;
 
 export function footprint(it) {
@@ -86,6 +86,12 @@ export function checkPlan(plan, opts = {}) {
         }
         for (const id of hit) out.push(`deur ${w.id}@${op.offset} raakt ${id}`);
       }
+      if (type === 'garage') { // keep 50 cm clear inside a sectional door (both sides; outside is empty anyway)
+        for (const side of [-1, 1]) {
+          const zone = rectOf([F.P(op.offset, side * F.t / 2), F.P(op.offset + op.width, side * (F.t / 2 + 50))]);
+          for (const it of items) if (vertical(it)[0] < (op.height || 230) && rectOv(fp.get(it.id), zone)) out.push(`blokkeert garagedeur ${w.id}: ${it.id}`);
+        }
+      }
       if (type === 'door' || type === 'glassdoor' || type === 'slider') {
         const m = type === 'slider' ? 25 : 0;
         for (const side of [-1, 1]) {
@@ -98,11 +104,13 @@ export function checkPlan(plan, opts = {}) {
       }
     }
   }
-  // 6. walkways: >= 120 wide and empty
+  // 6. walkways: every clear rectangle (or the polygon's bounding box) >= 120 wide and empty
   for (const wk of plan.items.filter((i) => i.type === 'walkway')) {
-    const r = rectOf(wk.polygon);
-    if (Math.min(r.x1 - r.x0, r.z1 - r.z0) < 120) out.push(`looppad ${wk.id} smaller dan 120 cm`);
-    for (const it of items) if (it.room === wk.room && vertical(it)[0] < 200 && rectOv(fp.get(it.id), r)) out.push(`looppad ${wk.id} geblokkeerd door ${it.id}`);
+    const rects = wk.clear ? wk.clear.map(([x0, z0, x1, z1]) => ({ x0, z0, x1, z1 })) : [rectOf(wk.polygon)];
+    for (const r of rects) {
+      if (Math.min(r.x1 - r.x0, r.z1 - r.z0) < 120) out.push(`looppad ${wk.id} smaller dan 120 cm`);
+      for (const it of items) if (it.room === wk.room && vertical(it)[0] < 200 && rectOv(fp.get(it.id), r)) out.push(`looppad ${wk.id} geblokkeerd door ${it.id}`);
+    }
   }
   // 7. hard requirements
   const has = (pred) => plan.items.some(pred);
@@ -114,6 +122,15 @@ export function checkPlan(plan, opts = {}) {
   const gStore = plan.items.filter((i) => i.room === 'garage' && ['tall', 'wardrobe'].includes(i.type) && (i.size?.[2] || 0) >= 200).reduce((s, i) => s + i.size[0], 0);
   if (gStore < 300) out.push(`eis: hoge garagekasten slechts ${gStore} cm`);
   if (!has((i) => i.type === 'walkway' && i.room === 'garage')) out.push('eis: looppad garage ontbreekt');
+  const bikes = plan.items.filter((i) => i.type === 'bike' && i.room === 'garage');
+  if (bikes.length < (opts.minBikes ?? 5)) out.push(`eis: ${bikes.length} fietsen in de garage (minimaal ${opts.minBikes ?? 5})`);
+  const sockets = plan.items.filter((i) => i.type === 'socket');
+  const eb = bikes.filter((b) => b.ebike);
+  if (!eb.length) out.push('eis: geen e-bikeplek');
+  for (const b of eb) {
+    const f = footprint(b);
+    if (!sockets.some((s) => distRect(f, s.pos[0], s.pos[1]) <= 150)) out.push(`eis: e-bike ${b.id} staat niet binnen 150 cm van een stopcontact`);
+  }
   const bw = plan.walls.find((w) => w.id === 'bijkeuken-slaapkamer');
   if (bw) {
     const F = wallFrame(bw, defaults);

@@ -3,7 +3,7 @@
   "version": 1,
   "id": "pantry-garage",
   "name": "Pantry in de garage",
-  "description": "Koelkast, vriezer en voorraadkast verhuizen naar een pantry-zone in de garage, direct naast de keukendeur. Daardoor wordt de keuken een U met 215 cm extra werkblad en een koffiehoek, en blijft de kastenwand in de garage helemaal staan. Nadelen: je loopt voor de koelkast even de garage in, de apparaten moeten geschikt zijn voor een onverwarmde ruimte (klimaatklasse SN-T), en de vrije vloer in de garage wordt 191 cm breed in plaats van 251 cm.",
+  "description": "Koelkast, vriezer en voorraadkast verhuizen naar een pantry-zone in de verwarmde garage, direct naast de keukendeur. Daardoor wordt de keuken een U met 215 cm extra werkblad en een koffiehoek, en blijven de kastenwand, de schoenenzone en de vijf fietsplekken in de garage gewoon staan. Nadelen: je loopt voor de koelkast even de garage in, en tussen de fietsen en de pantry blijft maar 61 cm over, dus fietsen gaan via de garagedeur naar buiten.",
   "base": "plans/vleugel.json",
   "patches": [
     {"op": "setMeta", "set": {"subtitle": "Indeling: pantry in de garage, U-keuken met langere werkbladen"}},
@@ -114,7 +114,7 @@
         "material": "@frontTall",
         "label": "Pantry: koelkast + vriezer",
         "labelHeight": 250,
-        "note": "Grote koelkast (178 cm) en aparte vriezer in klimaatklasse SN-T, direct naast de keukendeur."
+        "note": "Grote koelkast (178 cm) en aparte vriezer, direct naast de keukendeur in de verwarmde garage."
       }
     },
     {
@@ -169,13 +169,12 @@
       "id": "garage",
       "set": {
         "notes": [
-          "Pantry-zone direct rechts van de keukendeur: grote koelkast en aparte vriezer (SN-T, geschikt voor 10–43 °C) plus een voorraadkast van 100 cm, in eiken fronten.",
-          "De hoge kastenwand over de lange wand blijft helemaal staan.",
-          "Het looppad van 120 cm tussen keukendeur, entreedeur en bijkeuken blijft vrij; de pantry begint net daarnaast.",
-          "Tussen de pantry en de kastenwand blijft 191 cm vrije vloer over."
+          "Pantry-zone direct rechts van de keukendeur: grote koelkast, aparte vriezer en een voorraadkast van 100 cm in eiken fronten. De garage is verwarmd, dus gewone inbouwapparaten kunnen.",
+          "Verder zoals het basisontwerp: grote tegels van 60 × 120 cm, gestucte wanden, een hoge kastenwand van 480 cm, de schoenenzone bij de loopdeur en vijf fietsen (met een e-bike bij het stopcontact).",
+          "Het looppad van 120 cm tussen keukendeur en bijkeuken blijft vrij. Tussen de achterkant van de fietsen en de pantry blijft 61 cm over, dus fietsen gaan via de garagedeur naar buiten."
         ]
       }
     }
   ],
-  "checks": {"route": [[300, 450], [280, 380], [280, 250], [100, 252], [-100, 252], [-200, 305], [-420, 322], [-420, 330], [-500, 330], [-500, 240]]}
+  "checks": {"route": [[300, 450], [280, 380], [280, 250], [100, 190], [-100, 178], [-200, 230.4], [-420, 247.4], [-420, 255.4], [-500, 255.4], [-500, 165.4]]}
 }

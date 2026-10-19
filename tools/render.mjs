@@ -20,7 +20,7 @@ const shots = [
   ['15-laundry-bootroom-bijkeuken', 'scenario=laundry-bootroom&view=bijkeuken&labels=0'],
   ['16-inloopkast-overzicht', 'scenario=slaapkamer-inloopkast&view=overzicht&labels=0'],
   ['17-inloopkast-slaapkamer', 'scenario=slaapkamer-inloopkast&view=slaapkamer&labels=0'],
-  ['18-inloopkast-garage-werkbank-fietsen', 'scenario=slaapkamer-inloopkast&view=garage&labels=0'],
+  ['19-garage-entree-schoenen', 'view=entree&labels=0'],
 ].filter(s => !only || only.split(',').includes(s[0]));
 const browser = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const W = Number(process.env.W || 1600), H = Number(process.env.H || 1000);

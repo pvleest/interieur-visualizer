@@ -19,13 +19,13 @@
         "id": "bijkeuken-sokkel",
         "type": "plinth",
         "room": "bijkeuken",
-        "pos": [-257, 104.6],
+        "pos": [-257, 30.0],
         "size": [60, 60, 30],
         "material": "@frontUtility",
         "note": "Sokkel met lade van 30 cm."
       }
     },
-    {"op": "moveItem", "id": "bijkeuken-wasmachine", "pos": [-257, 104.6], "elev": 30},
+    {"op": "moveItem", "id": "bijkeuken-wasmachine", "pos": [-257, 30.0], "elev": 30},
     {
       "op": "updateItem",
       "id": "bijkeuken-wasmachine",
@@ -35,7 +35,7 @@
         "note": "Wasmachine op een sokkel van 30 cm, droger erop met een stapelkit. 60 cm van de slaapkamerwand, met de schoonmaakkast ertussen."
       }
     },
-    {"op": "moveItem", "id": "bijkeuken-droger", "pos": [-257, 104.6], "elev": 115},
+    {"op": "moveItem", "id": "bijkeuken-droger", "pos": [-257, 30.0], "elev": 115},
     {"op": "updateItem", "id": "bijkeuken-droger", "set": {"label": null, "note": "Droger op de wasmachine (stapelkit met uittrekplank)."}},
     {
       "op": "addItem",
@@ -43,39 +43,39 @@
         "id": "bijkeuken-kolom-bovenkast",
         "type": "wall",
         "room": "bijkeuken",
-        "pos": [-257, 104.6],
+        "pos": [-257, 30.0],
         "elev": 205,
         "size": [60, 60, 35],
         "doors": 1,
         "material": "@frontUtility"
       }
     },
-    {"op": "moveItem", "id": "bijkeuken-3-wasmandlades", "pos": [-158.5, 104.6]},
+    {"op": "moveItem", "id": "bijkeuken-3-wasmandlades", "pos": [-158.5, 30.0]},
     {
       "op": "addItem",
       "item": {
         "id": "bijkeuken-gootsteenkast",
         "type": "base",
         "room": "bijkeuken",
-        "pos": [-60, 104.6],
+        "pos": [-60, 30.0],
         "size": [60, 60, 88],
         "doors": 1,
         "material": "@frontUtility",
         "note": "Onderkast onder de uitstortgootsteen."
       }
     },
-    {"op": "moveItem", "id": "bijkeuken-vouwblad", "pos": [-128.5, 105.6]},
+    {"op": "moveItem", "id": "bijkeuken-vouwblad", "pos": [-128.5, 31.0]},
     {"op": "resizeItem", "id": "bijkeuken-vouwblad", "size": [197, 62, 4]},
     {
       "op": "updateItem",
       "id": "bijkeuken-vouwblad",
       "set": {"label": "Vouwblad 197 cm", "note": "Doorlopend werkblad over de wasmanden en de gootsteen: 60 cm langer dan in het basisontwerp."}
     },
-    {"op": "moveItem", "id": "bijkeuken-uitstortgootsteen", "pos": [-60, 100], "rot": 0},
-    {"op": "moveItem", "id": "bijkeuken-wall", "pos": [-128.5, 92.1]},
+    {"op": "moveItem", "id": "bijkeuken-uitstortgootsteen", "pos": [-60, 25.4], "rot": 0},
+    {"op": "moveItem", "id": "bijkeuken-wall", "pos": [-128.5, 17.5]},
     {"op": "resizeItem", "id": "bijkeuken-wall", "size": [197, 35, 75]},
-    {"op": "addItem", "item": {"id": "bijkeuken-led", "type": "ledStrip", "room": "bijkeuken", "pos": [-128.5, 106.6], "elev": 154, "size": [190, 2]}},
-    {"op": "moveItem", "id": "bijkeuken-kledingroede", "pos": [-347, 240], "rot": 90},
+    {"op": "addItem", "item": {"id": "bijkeuken-led", "type": "ledStrip", "room": "bijkeuken", "pos": [-128.5, 32.0], "elev": 154, "size": [190, 2]}},
+    {"op": "moveItem", "id": "bijkeuken-kledingroede", "pos": [-347, 165.4], "rot": 90},
     {"op": "updateItem", "id": "bijkeuken-kledingroede", "set": {"note": "Roede naast de strijkkast om gestreken was direct op te hangen."}},
     {
       "op": "updateItem",
@@ -91,7 +91,7 @@
         "id": "bijkeuken-garderobekast",
         "type": "tall",
         "room": "bijkeuken",
-        "pos": [-55, 173.2],
+        "pos": [-55, 98.6],
         "rot": -90,
         "size": [73, 50, 240],
         "rows": [{"cols": 1}, {"h": 45, "cols": 1}],
@@ -107,7 +107,7 @@
         "id": "bijkeuken-schoenenbank",
         "type": "base",
         "room": "bijkeuken",
-        "pos": [-50, 336],
+        "pos": [-50, 261.4],
         "rot": -90,
         "size": [76, 40, 45],
         "drawers": 2,
@@ -123,7 +123,7 @@
         "id": "bijkeuken-bankkussen",
         "type": "worktop",
         "room": "bijkeuken",
-        "pos": [-50, 336],
+        "pos": [-50, 261.4],
         "rot": -90,
         "elev": 45,
         "size": [76, 40, 6],
@@ -136,7 +136,7 @@
         "id": "bijkeuken-kapstok",
         "type": "rail",
         "room": "bijkeuken",
-        "pos": [-30, 336],
+        "pos": [-30, 261.4],
         "rot": -90,
         "elev": 180,
         "size": [70, 25],
@@ -146,7 +146,7 @@
         "note": "Kapstok boven het bankje."
       }
     },
-    {"op": "updateOpening", "wall": "garage-bijkeuken", "index": 0, "set": {"swing": -1, "hinge": "start", "open": 100}},
+    {"op": "updateOpening", "wall": "garage-bijkeuken", "index": 0, "set": {"swing": -1, "hinge": "end", "open": 90}},
     {
       "op": "updateRoom",
       "id": "bijkeuken",
@@ -161,5 +161,5 @@
       }
     }
   ],
-  "checks": {"route": [[300, 450], [280, 380], [280, 250], [100, 252], [-100, 252], [-200, 305], [-420, 322], [-420, 330], [-500, 330], [-500, 240]]}
+  "checks": {"route": [[300, 450], [280, 380], [280, 250], [100, 190], [-100, 178], [-200, 230.4], [-420, 247.4], [-420, 255.4], [-500, 255.4], [-500, 165.4]]}
 }

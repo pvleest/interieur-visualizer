@@ -19,6 +19,7 @@ The demo plan (`plans/vleugel.json`) is an interior design concept for a kitchen
 
 - Orbit **dollhouse view** with the ceilings off. Walls between the camera and the focus point are cut away automatically (toggle *Wanden: auto / laag / hoog*).
 - **Preset cameras** per room and a top-down **plan view**, all defined in the config.
+- **Garage (heated)**: a finished storage and entrance room with 60 × 120 tiles and plastered walls. It has a 480 cm tall cabinet wall, a shoe zone by the walk door (bench with shoe drawers, coat rail and cabinet, plus a slim shoe cabinet), five bikes in a staggered rack (the e-bike next to a socket), and a 120 cm walkway that stays clear.
 - **First-person walk mode** (*Rondlopen*): drag to look; W/S walk forward and back, A/D strafe left and right, and ←/→ (or Q/E) turn. On a phone, use the on-screen pad (⟲ turn left, ▲ forward, ⟳ turn right, ▼ back). Walls block you except at doors, sliders and open passages; the closed garage door also blocks. The ceilings are shown in this mode.
 - **Scenarios**: design variants that you can save, share by link (any device), export and import, and compare A ⇄ B.
 - **Clickable labels** and objects show a details panel with the dimensions (w × d × h). Hovering shows a tooltip.
@@ -38,7 +39,7 @@ A **scenario** is the base plan plus an ordered list of patch operations (see *P
     - *Kookeiland*: the short L-leg and the round table are replaced by a 212 × 96 island with a bar for three stools. The tall cabinet wall stays.
     - *Pantry in de garage*: fridge, freezer and pantry cabinet move to a zone right next to the kitchen door in the garage. The kitchen becomes a U with 215 cm of extra worktop.
     - *Laundry & bootroom*: washer and dryer are stacked, which gives a 197 cm folding counter with a slop sink. A bench with shoe drawers, a coat rail and a coat cabinet sit by the sliding door. The ironing cabinet stays.
-    - *Slaapkamer met inloopkast*: a new 10 cm wall behind the headboard creates a walk-in closet along the exterior wall, and the bed faces the garden door. The garage gets a 220 cm workbench and room for two bikes.
+    - *Slaapkamer met inloopkast*: a new 10 cm wall behind the headboard creates a walk-in closet along the exterior wall, and the bed faces the garden door. The garage stays as in the base design.
 - A scenario file can carry `"checks": {"route": [[x,z], …]}`: a walking route from the kitchen to the bedroom that the tests walk and keep clear of furniture.
 - **Opslaan als nieuw scenario** saves the current state, including live edits, in `localStorage` on that device.
 - **Deel link** compresses the scenario with lz-string into the URL hash (`#s=…`). The link opens the identical design on any device without a server or account. On a phone the native share sheet is used.
@@ -69,7 +70,7 @@ Items and rooms can reference a **palette role** instead of a fixed material: `"
                "betonDonker": { "label": "Donkere gietvloer", "color": "#6f6e6b", "texture": "concrete" } }
 ```
 
-`texture` can be `oak`, `oakDark`, `planks`, `concrete`, `epoxy`, `composite`, `tile`, `linen` or `rug`. The colour multiplies the texture.
+`texture` can be `oak`, `oakDark`, `planks`, `concrete`, `epoxy`, `tileLarge`, `composite`, `tile`, `linen` or `rug`. The colour multiplies the texture.
 
 These roles are used in `vleugel.json`: `frontBase`, `frontTall`, `frontUpper`, `frontGarage`, `frontUtility`, `wardrobe`, `accent`, `worktop`, `backsplash`, `floorKitchen`, `floorExtension`, `floorGarage`.
 
@@ -112,9 +113,9 @@ All dimensions are in cm. x points east and z points south. The origin is the in
 
 - **Bedroom facade**, measured from the inner face of the west wall: 87 wall, then **104 floor-length window** (fixed), then 71.571 wall, then **104 glazed garden door**, then about 21 to the partition.
 - **Bijkeuken facade**: 140 wall (from the garden door, across the partition), then a **198 sliding door**, then about 20 to the garage wall.
-- **Entrance**: the extension facade sits **66** further south than the garage. In the **135**-wide niche between the extension and the kitchen there is a **90 glazed door** in the garage's south wall.
+- **Facade line**: the extension facade and the garage's south wall are in line; the extension is not shifted, and its north wall is in line with the garage's north wall. Going east from the bijkeuken slider: **66** of wall (20 to the bijkeuken's inner corner, plus the 30 cm garage wall, plus 16 inside the garage), then the **90 glazed walk door**, then about **30** to the kitchen's west wall. Together that is the **135** niche between the extension corner and the kitchen.
 - **Kitchen**: a **292 facade window**, a 90 door to the garage, and an opening of about 106 to the living room. The living room and the rest of the house are context areas only.
-- The garage–bijkeuken door is at garage z 210–295. The garage's sectional door stays closed in walk mode; to make it walkable, add `garage` to `PASSABLE` in `js/app.js`.
+- The garage–bijkeuken door is at z 135–220 (assumed; the drawing does not show it clearly). The garage's sectional door stays closed in walk mode; to make it walkable, add `garage` to `PASSABLE` in `js/app.js`.
 
 ## Tests
 
@@ -127,14 +128,15 @@ For the base plan and **every** scenario, `tools/layout-checks.mjs` checks:
 - every item lies inside its room;
 - no two items intersect (footprint plus height; worktops on bases and chairs or stools under tables are fine);
 - no item sits inside a wall, including walls added by a scenario;
-- door leaves can swing freely, and 50 cm in front of every door, glass door and slider stays clear;
-- the garage walkway is at least 120 cm wide and empty;
+- door leaves can swing freely, and 50 cm in front of every door, glass door, slider and the sectional garage door stays clear;
+- the garage walkway is at least 120 cm wide and empty (an L-shaped walkway lists its `clear` rectangles);
 - the hard requirements are met:
   - a large fridge plus a separate freezer;
   - washer plus dryer;
   - laundry-basket drawers;
   - an ironing cabinet;
   - at least 300 cm of tall garage cabinets;
+  - at least 5 bikes in the garage, with an e-bike (`"ebike": true`) within 150 cm of a `socket`;
   - washer and dryer at least 30 cm from the bedroom wall;
 - a walking route keuken → garage → bijkeuken → slaapkamer stays walkable, with at least 50 cm clear of furniture.
 
@@ -227,6 +229,8 @@ Wall normal: for a wall from `from` to `to`, `swing: 1` opens a door towards the
 | `workbench` | Drawer base, butcher-block top, pegboard with tools, upper cabinet with LED. |
 | `bed`, `nightstand`, `wallLight`, `pendant`, `rug`, `curtain`, `slatPanel`, `rail`, `table`, `chair`, `plant` | Furniture and decoration. |
 | `bike` | Bicycle with a wall-rack post. `size: [length, handlebar width, height]`, `color`. |
+| `bikeRack` | Staggered floor rack, `slots` = x offsets of the bikes. |
+| `socket` | Wall socket / charging point (used for the e-bike check). |
 | `stool` | Bar stool. `size: [diameter, diameter, seat height]`. |
 | `ledStrip` | Emissive strip (`size: [length, width]`). |
 | `walkway` | Translucent floor marking: `polygon` in absolute coordinates, with `pos: [0,0]`. |
@@ -256,7 +260,7 @@ Een eenvoudige, data-gedreven **3D-interieurvisualizer** die in de browser draai
 
 - **Overzicht**: een poppenhuisweergave van de hele vleugel, waarbij de wanden die in de weg staan automatisch omlaag gaan.
 - **Plattegrond**: een bovenaanzicht met alle labels.
-- **Keuken, Garage, Bijkeuken, Slaapkamer**: een vaste camera per ruimte.
+- **Keuken, Garage, Entree, Bijkeuken, Slaapkamer**: een vaste camera per ruimte.
 - **Rondlopen**: slepen om rond te kijken, en W/S vooruit en achteruit, A/D opzij naar links en rechts, ←/→ draaien, of de knoppen op je telefoon.
 - Klik op een element of label voor de maten en een toelichting. In het paneel staan de ontwerpkeuzes per ruimte en een maattabel.
 
