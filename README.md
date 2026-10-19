@@ -19,8 +19,10 @@ The demo plan (`plans/vleugel.json`) is an interior design concept for a kitchen
 
 - Orbit **dollhouse view** with the ceilings off. Walls between the camera and the focus point are cut away automatically (toggle *Wanden: auto / laag / hoog*).
 - **Preset cameras** per room and a top-down **plan view**, all defined in the config.
-- **Garage (heated)**: a finished storage and entrance room with 60 × 120 tiles and plastered walls. It has a 480 cm tall cabinet wall, a shoe zone by the walk door (bench with shoe drawers, coat rail and cabinet, plus a slim shoe cabinet), five bikes in a staggered rack (the e-bike next to a socket), and a 120 cm walkway that stays clear.
+- **Garage (heated)**: a finished storage and entrance room with 60 × 120 tiles and plastered walls. It has a 420 cm tall cabinet wall, a glass walk door to the outside (same style as the bedroom garden door), a shoe zone by the walk door (bench with shoe drawers, coat rail and cabinet, plus a slim shoe cabinet), five bikes in a staggered rack (the e-bike next to a socket), and a 120 cm walkway that stays clear.
 - **First-person walk mode** (*Rondlopen*): drag to look; W/S walk forward and back, A/D strafe left and right, and ←/→ (or Q/E) turn. On a phone, use the on-screen pad (⟲ turn left, ▲ forward, ⟳ turn right, ▼ back). Walls block you except at doors, sliders and open passages; the closed garage door also blocks. The ceilings are shown in this mode.
+- **Elektra** (toggle chip *Elektra*, or `?elektra=1`): a proposal for wall sockets and connection points (small white wall plates) with labels for type and height. The *Elektra* tab lists every point per room (type, height to the centre of the box, circuit/remark). You can copy it as text or download it as CSV for the electrician. The points live in the base plan with `"layer": "elektra"`, so every scenario inherits them; scenarios move or add points where appliances move.
+- **Kitchen**: the former 292 cm window is a glass sliding door (schuifpui) down to the floor, with the same width and top height.
 - **Scenarios**: design variants that you can save, share by link (any device), export and import, and compare A ⇄ B.
 - **Clickable labels** and objects show a details panel with the dimensions (w × d × h). Hovering shows a tooltip.
 - A side panel lists the design choices per room and a table of room and element dimensions.
@@ -37,8 +39,8 @@ A **scenario** is the base plan plus an ordered list of patch operations (see *P
   - **Kleurvarianten** (palette only): *Licht & warm*, *Donker & strak*.
   - **Indelingen** (layout variants; each has a Dutch rationale shown in the UI):
     - *Kookeiland*: the short L-leg and the round table are replaced by a 212 × 96 island with a bar for three stools. The tall cabinet wall stays.
-    - *Pantry in de garage*: fridge, freezer and pantry cabinet move to a zone right next to the kitchen door in the garage. The kitchen becomes a U with 215 cm of extra worktop.
-    - *Laundry & bootroom*: washer and dryer are stacked, which gives a 197 cm folding counter with a slop sink. A bench with shoe drawers, a coat rail and a coat cabinet sit by the sliding door. The ironing cabinet stays.
+    - *Pantry in de garage*: fridge, freezer and pantry cabinet move to a zone right next to the kitchen door in the garage. The kitchen becomes a U with 215 cm of extra worktop; the pantry cabinet is shallow (35 cm) so 86 cm stays clear behind the bikes.
+    - *Laundry & bootroom*: washer and dryer are stacked, which gives a 197 cm folding counter with a slop sink. A bench with shoe drawers, a coat rail and a slim coat cabinet sit by the sliding door. The ironing board hangs on a wall holder.
     - *Slaapkamer met inloopkast*: a new 10 cm wall behind the headboard creates a walk-in closet along the exterior wall, and the bed faces the garden door. The garage stays as in the base design.
 - A scenario file can carry `"checks": {"route": [[x,z], …]}`: a walking route from the kitchen to the bedroom that the tests walk and keep clear of furniture.
 - **Opslaan als nieuw scenario** saves the current state, including live edits, in `localStorage` on that device.
@@ -114,8 +116,8 @@ All dimensions are in cm. x points east and z points south. The origin is the in
 - **Bedroom facade**, measured from the inner face of the west wall: 87 wall, then **104 floor-length window** (fixed), then 71.571 wall, then **104 glazed garden door**, then about 21 to the partition.
 - **Bijkeuken facade**: 140 wall (from the garden door, across the partition), then a **198 sliding door**, then about 20 to the garage wall.
 - **Facade line**: the extension facade and the garage's south wall are in line; the extension is not shifted, and its north wall is in line with the garage's north wall. Going east from the bijkeuken slider: **66** of wall (20 to the bijkeuken's inner corner, plus the 30 cm garage wall, plus 16 inside the garage), then the **90 glazed walk door**, then about **30** to the kitchen's west wall. Together that is the **135** niche between the extension corner and the kitchen.
-- **Kitchen**: a **292 facade window**, a 90 door to the garage, and an opening of about 106 to the living room. The living room and the rest of the house are context areas only.
-- The garage–bijkeuken door is at z 135–220 (assumed; the drawing does not show it clearly). The garage's sectional door stays closed in walk mode; to make it walkable, add `garage` to `PASSABLE` in `js/app.js`.
+- **Kitchen**: a **292 facade opening**, now a glass sliding door to the floor (top at 215, the window's former top; the west half slides open), a 90 door to the garage, and an opening of about 106 to the living room. The living room and the rest of the house are context areas only.
+- The garage–bijkeuken door opening starts 130 cm from the inner face of the north wall and is 90 cm wide (z 130–220). The garage's sectional door stays closed in walk mode; to make it walkable, add `garage` to `PASSABLE` in `js/app.js`.
 
 ## Tests
 
@@ -128,16 +130,18 @@ For the base plan and **every** scenario, `tools/layout-checks.mjs` checks:
 - every item lies inside its room;
 - no two items intersect (footprint plus height; worktops on bases and chairs or stools under tables are fine);
 - no item sits inside a wall, including walls added by a scenario;
-- door leaves can swing freely, and 50 cm in front of every door, glass door, slider and the sectional garage door stays clear;
+- door leaves can swing freely, and 50 cm in front of every door, glass door and the sectional garage door stays clear; for a slider, the half that slides open (`"opens": "start" | "end"`, otherwise the middle part) stays clear;
+- every cabinet and appliance front has at least 70 cm clear in front (movable chairs and stools, worktops and wall cabinets don't count; an abutting perpendicular run of base units is accepted as a normal L-corner up to 65 cm);
 - the garage walkway is at least 120 cm wide and empty (an L-shaped walkway lists its `clear` rectangles);
 - the hard requirements are met:
   - a large fridge plus a separate freezer;
   - washer plus dryer;
   - laundry-basket drawers;
-  - an ironing cabinet;
+  - an ironing cabinet or a wall-hung ironing board;
   - at least 300 cm of tall garage cabinets;
   - at least 5 bikes in the garage, with an e-bike (`"ebike": true`) within 150 cm of a `socket`;
   - washer and dryer at least 30 cm from the bedroom wall;
+  - every fridge, freezer, oven column, dishwasher, hob, hood, washer, dryer and e-bike has its own electrical point (`serves`) within 150 cm in the same room; washer and dryer never share one; points sit on a wall face unless `mount` says otherwise;
 - a walking route keuken → garage → bijkeuken → slaapkamer stays walkable, with at least 50 cm clear of furniture.
 
 ## URL parameters
@@ -151,6 +155,8 @@ For the base plan and **every** scenario, `tools/layout-checks.mjs` checks:
 | `labelroom` | `*` | Show item labels for all rooms (default: only the room in focus). |
 | `dpr` | `2` | Force a device pixel ratio. |
 | `scenario` | `donker-strak` | Open a repo scenario. |
+| `elektra` | `1` | Start with the electrical points shown. |
+| `cam` | `170,900,440,190,0,150` | Render helper: camera position and target in cm (x,y,z,tx,ty,tz). |
 | `#s=…` | (hash) | Shared scenario, created by *Deel link*. |
 
 ## Config format (`plans/*.json`)
@@ -230,7 +236,8 @@ Wall normal: for a wall from `from` to `to`, `swing: 1` opens a door towards the
 | `bed`, `nightstand`, `wallLight`, `pendant`, `rug`, `curtain`, `slatPanel`, `rail`, `table`, `chair`, `plant` | Furniture and decoration. |
 | `bike` | Bicycle with a wall-rack post. `size: [length, handlebar width, height]`, `color`. |
 | `bikeRack` | Staggered floor rack, `slots` = x offsets of the bikes. |
-| `socket` | Wall socket / charging point (used for the e-bike check). |
+| `socket` | Electrical point, drawn as a wall plate centred on `elev`. `kind`: `dubbel`, `enkel`, `perilex`, `laadpunt`, `driver`, `aansluitpunt`. With `"layer": "elektra"` it is toggled by *Elektra* and listed in the Elektra tab; `group` (circuit), `note`, `serves` (item ids) and `mount` are optional. |
+| `ironingBoard` | Freestanding ironing board hung flat on a wall holder. |
 | `stool` | Bar stool. `size: [diameter, diameter, seat height]`. |
 | `ledStrip` | Emissive strip (`size: [length, width]`). |
 | `walkway` | Translucent floor marking: `polygon` in absolute coordinates, with `pos: [0,0]`. |
@@ -262,6 +269,8 @@ Een eenvoudige, data-gedreven **3D-interieurvisualizer** die in de browser draai
 - **Plattegrond**: een bovenaanzicht met alle labels.
 - **Keuken, Garage, Entree, Bijkeuken, Slaapkamer**: een vaste camera per ruimte.
 - **Rondlopen**: slepen om rond te kijken, en W/S vooruit en achteruit, A/D opzij naar links en rechts, ←/→ draaien, of de knoppen op je telefoon.
+- **Elektra**: zet de knop *Elektra* aan voor een voorstel met wandcontactdozen en aansluitpunten (witte wandplaatjes met type en hoogte). Het tabblad *Elektra* geeft per ruimte een lijst voor de elektricien (kopiëren of CSV).
+- Keuken: het grote raam is een glazen schuifpui tot de vloer geworden. De loopdeur van de garage naar buiten is een glazen deur, net als de tuindeur van de slaapkamer.
 - Klik op een element of label voor de maten en een toelichting. In het paneel staan de ontwerpkeuzes per ruimte en een maattabel.
 
 **Scenario's**: kies een variant of maak je eigen variant via *Ontwerp aanpassen*.

@@ -3,7 +3,7 @@
   "version": 1,
   "id": "laundry-bootroom",
   "name": "Laundry & bootroom",
-  "description": "Wasmachine en droger staan in één kolom, zo komt er 60 cm extra vouwblad en een uitstortgootsteen in dezelfde rij. Bij de schuifpui komt een bootroom met een bankje met schoenenlades en een kapstok, naast de garagedeur een garderobekast, en de strijkkast met uitklapbare strijkplank blijft. Let op: de droger zit bovenin (deur op ongeveer 1,60 m), je hebt een stapelkit nodig, en de deur naar de garage draait voortaan de garage in.",
+  "description": "Wasmachine en droger staan in één kolom, zo komt er 60 cm extra vouwblad en een uitstortgootsteen in dezelfde rij. Bij de schuifpui komt een bootroom met een bankje met schoenenlades en een kapstok, naast de schuifpui een garderobekast, en de strijkplank hangt aan een wandhouder tegen de slaapkamerwand. Let op: de droger zit bovenin (deur op ongeveer 1,60 m), je hebt een stapelkit nodig, en de deur naar de garage draait voortaan de garage in.",
   "base": "plans/vleugel.json",
   "patches": [
     {"op": "setMeta", "set": {"subtitle": "Indeling: laundry & bootroom, machines gestapeld"}},
@@ -75,15 +75,12 @@
     {"op": "moveItem", "id": "bijkeuken-wall", "pos": [-128.5, 17.5]},
     {"op": "resizeItem", "id": "bijkeuken-wall", "size": [197, 35, 75]},
     {"op": "addItem", "item": {"id": "bijkeuken-led", "type": "ledStrip", "room": "bijkeuken", "pos": [-128.5, 32.0], "elev": 154, "size": [190, 2]}},
-    {"op": "moveItem", "id": "bijkeuken-kledingroede", "pos": [-347, 165.4], "rot": 90},
-    {"op": "updateItem", "id": "bijkeuken-kledingroede", "set": {"note": "Roede naast de strijkkast om gestreken was direct op te hangen."}},
+    {"op": "updateItem", "id": "bijkeuken-kledingroede", "set": {"note": "Roede boven het gootsteenhoekje om gestreken was direct op te hangen."}},
+    {"op": "moveItem", "id": "bijkeuken-strijkplank", "pos": [-343, 151.0]},
     {
       "op": "updateItem",
-      "id": "bijkeuken-strijkkast",
-      "set": {
-        "label": "Strijkkast (uitklapbare strijkplank)",
-        "note": "Hoge kast met een uitklapbare strijkplank op werkhoogte; dicht is het een gewone kast."
-      }
+      "id": "bijkeuken-strijkplank",
+      "set": {"note": "Losse strijkplank aan een wandhouder tegen de slaapkamerwand; de schoonmaakkast in de hoek blijft bereikbaar."}
     },
     {
       "op": "addItem",
@@ -91,14 +88,14 @@
         "id": "bijkeuken-garderobekast",
         "type": "tall",
         "room": "bijkeuken",
-        "pos": [-55, 98.6],
-        "rot": -90,
-        "size": [73, 50, 240],
+        "pos": [-273, 284.9],
+        "rot": 180,
+        "size": [48, 35, 240],
         "rows": [{"cols": 1}, {"h": 45, "cols": 1}],
         "material": "@frontUtility",
-        "label": "Garderobekast",
+        "label": "Smalle garderobekast",
         "labelHeight": 255,
-        "note": "Jassen, tassen en onderin schoenen; vlak naast de deur naar de garage."
+        "note": "Smalle kast (48 × 35 cm) voor jassen en tassen, tegen de gevel tussen de slaapkamerdeur en de schuifpui."
       }
     },
     {
@@ -146,6 +143,13 @@
         "note": "Kapstok boven het bankje."
       }
     },
+    {"op": "moveItem", "id": "el-bijkeuken-wasmachine", "pos": [-272, 0.8], "elev": 215},
+    {"op": "updateItem", "id": "el-bijkeuken-wasmachine", "set": {"note": "in de bovenkast van de was-droogkolom, apart van de droger"}},
+    {"op": "moveItem", "id": "el-bijkeuken-droger", "pos": [-242, 0.8], "elev": 215},
+    {"op": "updateItem", "id": "el-bijkeuken-droger", "set": {"note": "in de bovenkast van de was-droogkolom"}},
+    {"op": "moveItem", "id": "el-bijkeuken-werkblad", "pos": [-130, 0.8]},
+    {"op": "moveItem", "id": "el-bijkeuken-strijk", "pos": [-346, 120]},
+    {"op": "updateItem", "id": "el-bijkeuken-werkblad", "set": {"label": "Vouwblad bijkeuken"}},
     {"op": "updateOpening", "wall": "garage-bijkeuken", "index": 0, "set": {"swing": -1, "hinge": "end", "open": 90}},
     {
       "op": "updateRoom",
@@ -154,8 +158,8 @@
         "notes": [
           "Wasmachine en droger gestapeld in één kolom (wasmachine op een sokkel van 30 cm), 60 cm van de slaapkamerwand, met de schoonmaakkast ertussen.",
           "Daardoor een vouwblad van 197 cm over drie wasmandlades en een uitstortgootsteen, met bovenkasten erboven.",
-          "Strijkkast met uitklapbare strijkplank tegen de slaapkamerwand en een kledingroede ernaast.",
-          "Bootroom bij de schuifpui: een bankje met schoenenlades en een kapstok, plus een garderobekast naast de garagedeur.",
+          "Losse strijkplank aan een wandhouder tegen de slaapkamerwand (met stopcontact), zodat de schoonmaakkast bereikbaar blijft; een kledingroede boven het gootsteenhoekje.",
+          "Bootroom bij de schuifpui: een bankje met schoenenlades en een kapstok, plus een garderobekast naast de schuifpui.",
           "De deur naar de garage draait nu de garage in, zodat de bankjeshoek vrij blijft."
         ]
       }

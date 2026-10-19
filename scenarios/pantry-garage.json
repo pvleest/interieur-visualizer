@@ -135,17 +135,100 @@
         "id": "garage-pantry-voorraad",
         "type": "tall",
         "room": "garage",
-        "pos": [515, 281],
+        "pos": [515, 293.5],
         "rot": 180,
-        "size": [100, 60, 235],
+        "size": [100, 35, 235],
         "rows": [{"cols": 2}, {"h": 45, "cols": 2}],
         "material": "@frontTall",
         "label": "Voorraadkast",
         "labelHeight": 250,
-        "note": "Voorraadkast met binnenladen voor blik, drank en bulk."
+        "note": "Ondiepe voorraadkast (35 cm) met planken voor blik, drank en bulk; zo blijft er 86 cm vrij tussen de fietsen en de kast."
       }
     },
     {"op": "addItem", "item": {"id": "garage-pantry-led", "type": "ledStrip", "room": "garage", "pos": [455, 245], "elev": 238, "size": [220, 3]}},
+    {"op": "removeItem", "id": "el-keuken-koelkast"},
+    {"op": "removeItem", "id": "el-keuken-vriezer"},
+    {"op": "removeItem", "id": "el-keuken-tafel"},
+    {"op": "moveItem", "id": "el-keuken-oven", "pos": [166, 375]},
+    {
+      "op": "addItem",
+      "item": {
+        "id": "el-keuken-werkblad-w1",
+        "type": "socket",
+        "layer": "elektra",
+        "kind": "dubbel",
+        "room": "keuken",
+        "label": "Werkblad west (koffiehoek)",
+        "pos": [166, 465],
+        "rot": 90,
+        "elev": 105,
+        "size": [16, 1.6, 8.5],
+        "group": "groep keuken 3",
+        "note": "koffiemachine / waterkoker"
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "el-keuken-werkblad-w2",
+        "type": "socket",
+        "layer": "elektra",
+        "kind": "dubbel",
+        "room": "keuken",
+        "label": "Werkblad west zuid",
+        "pos": [166, 578],
+        "rot": 90,
+        "elev": 105,
+        "size": [16, 1.6, 8.5],
+        "group": "groep keuken 3",
+        "note": "13 cm boven het blad"
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "el-garage-pantry-koelkast",
+        "type": "socket",
+        "layer": "elektra",
+        "kind": "enkel",
+        "room": "garage",
+        "label": "Pantry: koelkast",
+        "pos": [375, 310.2],
+        "rot": 180,
+        "elev": 205,
+        "size": [8.5, 1.6, 8.5],
+        "group": "groep garage pantry",
+        "note": "boven de koelkast in de pantrykast",
+        "serves": ["garage-pantry-koelkast"]
+      }
+    },
+    {
+      "op": "addItem",
+      "item": {
+        "id": "el-garage-pantry-vriezer",
+        "type": "socket",
+        "layer": "elektra",
+        "kind": "enkel",
+        "room": "garage",
+        "label": "Pantry: vriezer",
+        "pos": [435, 310.2],
+        "rot": 180,
+        "elev": 205,
+        "size": [8.5, 1.6, 8.5],
+        "group": "eigen groep",
+        "note": "vriezer apart, zodat een storing elders hem niet uitschakelt",
+        "serves": ["garage-pantry-vriezer"]
+      }
+    },
+    {
+      "op": "updateOpening",
+      "wall": "keuken-gevel",
+      "index": 0,
+      "set": {
+        "opens": "end",
+        "note": "Schuifpui van 292 cm; in deze indeling schuift het oostelijke deel open, omdat het westelijke been van de U tot vlak bij de pui loopt."
+      }
+    },
     {
       "op": "setView",
       "id": "pantry",
@@ -170,8 +253,8 @@
       "set": {
         "notes": [
           "Pantry-zone direct rechts van de keukendeur: grote koelkast, aparte vriezer en een voorraadkast van 100 cm in eiken fronten. De garage is verwarmd, dus gewone inbouwapparaten kunnen.",
-          "Verder zoals het basisontwerp: grote tegels van 60 × 120 cm, gestucte wanden, een hoge kastenwand van 480 cm, de schoenenzone bij de loopdeur en vijf fietsen (met een e-bike bij het stopcontact).",
-          "Het looppad van 120 cm tussen keukendeur en bijkeuken blijft vrij. Tussen de achterkant van de fietsen en de pantry blijft 61 cm over, dus fietsen gaan via de garagedeur naar buiten."
+          "Verder zoals het basisontwerp: grote tegels van 60 × 120 cm, gestucte wanden, een hoge kastenwand van 420 cm, de schoenenzone bij de loopdeur en vijf fietsen (met een e-bike bij het stopcontact).",
+          "Het looppad van 120 cm tussen keukendeur en bijkeuken blijft vrij. De voorraadkast is ondiep (35 cm), zodat er 86 cm vrij blijft tussen de achterkant van de fietsen en de kastdeuren; fietsen gaan via de garagedeur naar buiten."
         ]
       }
     }

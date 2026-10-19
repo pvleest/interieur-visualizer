@@ -64,7 +64,7 @@ function buildOpening(op, wall, t) {
       frameRect(g, a - (i ? ov : 0), a + pw + (i ? 0 : ov), 5, top - 5, 4, 5, M.frame, z);
       B(g, pw - 8, top - 18, 0.5, M.glass, a + pw / 2, 9, z, { cast: false });
     }
-    if (type === 'glassdoor') B(g, 2, 30, 5, M.steel, u1 - 14, 90, 3);
+    if (type === 'glassdoor') { const hu = (op.hinge ?? 'start') === 'end' ? u0 + 14 : u1 - 14; B(g, 2, 30, 5, M.steel, hu, 90, 3); B(g, 2, 30, 5, M.steel, hu, 90, -3); }
   } else if (type === 'garage') {
     const segs = 5; const sh = op.height / segs;
     for (let i = 0; i < segs; i++) B(g, op.width, sh - 0.6, 4, M.garageDoor, cu, sill + i * sh + 0.3, op.side === -1 ? -t / 2 + 4 : t / 2 - 4);
@@ -198,7 +198,15 @@ export function buildPlan(plan) {
     g.traverse(o => { if (o.isMesh) o.userData.itemRoot = g; });
     root.add(g);
     out.items.push(g);
-    if (it.label) {
+    if (it.layer) g.userData.layer = it.layer;
+    if (it.label && it.layer) {
+      // layer items (e.g. electrical points) get their own label style and are toggled by the app
+      const lbl = makeLabel(`<span class="dot"></span>${it.label}${it.elev != null ? ` <em>${it.elev} cm</em>` : ''}`, `item-label layer-label layer-${it.layer}`);
+      lbl.position.set(0, (it.labelHeight ?? 14), 0);
+      lbl.element.dataset.index = idx;
+      lbl.userData.layer = it.layer;
+      g.add(lbl); (out.layerLabels ||= []).push(lbl);
+    } else if (it.label) {
       const lbl = makeLabel(`<span class="dot"></span>${it.label}`, 'item-label');
       const h = it.labelHeight ?? Math.min((it.size?.[2] ?? 80) + (it.elev || 0) + 12, 250);
       if (it.labelAt) lbl.position.set(it.labelAt[0] - x, h - (it.elev || 0), it.labelAt[1] - z);

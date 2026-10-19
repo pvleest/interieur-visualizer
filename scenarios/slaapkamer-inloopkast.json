@@ -3,7 +3,7 @@
   "version": 1,
   "id": "slaapkamer-inloopkast",
   "name": "Slaapkamer met inloopkast",
-  "description": "Een nieuwe wand achter het hoofdbord maakt een inloopkast langs de buitenmuur, met 220 cm kastruimte, een ladekast en een passpiegel. Het bed kijkt nu naar de tuindeur, en de garage blijft zoals in het basisontwerp (kastenwand, schoenenzone en vijf fietsplekken). Nadelen: het bed is maar aan één kant echt toegankelijk, en de inbouwkast tegen de bijkeuken vervalt; een akoestische lamellenwand vangt het geluid deels op.",
+  "description": "Een nieuwe wand achter het hoofdbord maakt een inloopkast langs de buitenmuur, met 220 cm kastruimte (met binnenladen) en een passpiegel. Het bed kijkt nu naar de tuindeur, en de garage blijft zoals in het basisontwerp (kastenwand, schoenenzone en vijf fietsplekken). Nadelen: het bed is maar aan één kant echt toegankelijk, en de inbouwkast tegen de bijkeuken vervalt; een akoestische lamellenwand vangt het geluid deels op.",
   "base": "plans/vleugel.json",
   "patches": [
     {"op": "setMeta", "set": {"subtitle": "Indeling: slaapkamer met inloopkast achter het hoofdbord"}},
@@ -49,21 +49,7 @@
         "material": "@wardrobe",
         "label": "Inloopkast: kastenwand 220 cm",
         "labelHeight": 270,
-        "note": "Kastenwand tot het plafond langs de buitenmuur, met 80 cm loopruimte ervoor."
-      }
-    },
-    {
-      "op": "addItem",
-      "item": {
-        "id": "slaapkamer-inloop-ladekast",
-        "type": "base",
-        "room": "slaapkamer",
-        "pos": [-655, 25.0],
-        "size": [80, 50, 90],
-        "drawers": 4,
-        "material": "@wardrobe",
-        "label": "Ladekast",
-        "labelHeight": 110
+        "note": "Kastenwand tot het plafond langs de buitenmuur, met binnenladen in twee vakken en 85 cm loopruimte ervoor."
       }
     },
     {
@@ -81,6 +67,26 @@
         "labelHeight": 170
       }
     },
+    {"op": "moveItem", "id": "el-slaapkamer-bed-1", "pos": [-601.2, 17.4], "elev": 65},
+    {
+      "op": "updateItem",
+      "id": "el-slaapkamer-bed-1",
+      "set": {"mount": "hoofdbordwand", "note": "in de lamellen van de hoofdbordwand, boven het nachtkastje"}
+    },
+    {"op": "moveItem", "id": "el-slaapkamer-bed-2", "pos": [-601.2, 214.4], "elev": 65},
+    {
+      "op": "updateItem",
+      "id": "el-slaapkamer-bed-2",
+      "set": {"mount": "hoofdbordwand", "note": "in de lamellen van de hoofdbordwand, boven het nachtkastje"}
+    },
+    {"op": "moveItem", "id": "el-slaapkamer-kastlicht", "pos": [-754, 110.4], "rot": 90},
+    {
+      "op": "updateItem",
+      "id": "el-slaapkamer-kastlicht",
+      "set": {"serves": ["slaapkamer-inloop-kastenwand"], "note": "boven de kastenwand in de inloopkast, met bewegingssensor"}
+    },
+    {"op": "moveItem", "id": "el-slaapkamer-bureau", "pos": [-420, 0.8]},
+    {"op": "updateItem", "id": "el-slaapkamer-bureau", "set": {"label": "Algemeen (noordwand)"}},
     {
       "op": "addItem",
       "item": {
@@ -107,7 +113,7 @@
       "id": "slaapkamer",
       "set": {
         "notes": [
-          "Nieuwe wand van 10 cm, 145 cm uit de buitenmuur: daarachter een inloopkast met een kastenwand van 220 cm, een ladekast en een passpiegel.",
+          "Nieuwe wand van 10 cm, 145 cm uit de buitenmuur: daarachter een inloopkast met een kastenwand van 220 cm (met binnenladen) en een passpiegel.",
           "Je loopt de inloopkast in langs het raam tot de vloer; het raam geeft daglicht in de kast en in de slaapkamer.",
           "Het bed staat met het hoofdbord tegen de lamellenwand en het voeteneinde naar de tuindeur.",
           "De inbouwkast tegen de bijkeuken vervalt; een akoestische lamellenwand neemt de geluidsdemping over.",

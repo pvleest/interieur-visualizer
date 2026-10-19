@@ -421,6 +421,26 @@ function rail(spec) {
   return g;
 }
 
+// Freestanding ironing board, folded and hung flat against the wall on a holder (size: [w, d, h], front faces +z).
+function ironingBoard(spec) {
+  const g = new THREE.Group();
+  const M = materials();
+  const [w, d, h] = spec.size || [38, 8, 135];
+  // wall holder: back plate + two hooks near the top
+  B(g, w * 0.8, 6, 1.2, M.steel, 0, h - 22, -d / 2 + 0.6);
+  for (const x of [-w * 0.3, w * 0.3]) B(g, 1.6, 1.6, d - 1, M.steel, x, h - 22, 0);
+  // folded legs (two crossing steel tubes right behind the board)
+  for (const s of [-1, 1]) { const leg = B(g, 1.8, h * 0.82, 1.8, M.steel, s * w * 0.28, 4, -d / 2 + 3); leg.rotation.z = s * 0.05; }
+  // board: covered top, tapering to a nose at the top
+  const cover = mat(spec.material || { label: 'Strijkhoes', color: '#9fb3bf', roughness: 0.95 });
+  B(g, w, h * 0.72, 2.6, cover, 0, 6, d / 2 - 2, { rounded: 1 });
+  B(g, w * 0.72, h * 0.16, 2.6, cover, 0, 6 + h * 0.72, d / 2 - 2, { rounded: 1 });
+  B(g, w * 0.4, h * 0.08, 2.6, cover, 0, 6 + h * 0.88, d / 2 - 2, { rounded: 1 });
+  // iron rest (end plate) at the bottom
+  B(g, w * 0.7, 4, 3, M.steel, 0, 0, d / 2 - 2.5);
+  return g;
+}
+
 function ironingCabinet(spec) {
   const g = new THREE.Group();
   const [w, d, h] = spec.size;
@@ -514,14 +534,32 @@ function bikeRack(spec) {
   return g;
 }
 
-// Wall socket / e-bike charging point (size: [w, d, h]).
+// Electrical point (wall plate), centred on its height (elev = centre height in cm). Front faces +z.
+// kind: dubbel | enkel | perilex | laadpunt | driver | aansluitpunt
+export const SOCKET_KINDS = {
+  dubbel: { size: [16, 1.6, 8.5], label: 'Dubbele wandcontactdoos' },
+  enkel: { size: [8.5, 1.6, 8.5], label: 'Enkele wandcontactdoos' },
+  perilex: { size: [10, 2, 10], label: 'Perilex-aansluiting (kookplaat)' },
+  laadpunt: { size: [16, 1.6, 8.5], label: 'Laadpunt (dubbele wcd, eigen groep)' },
+  driver: { size: [22, 4, 8], label: 'Aansluitpunt LED-driver' },
+  aansluitpunt: { size: [8.5, 1.6, 8.5], label: 'Aansluitpunt verlichting' },
+};
 function socket(spec) {
   const g = new THREE.Group();
   const M = materials();
-  const [w, d, h] = spec.size;
-  B(g, w, h, d, mat('#f4f4f2'), 0, 0, 0, { rounded: 0.6 });
-  cyl(g, 1.2, 1.2, 0.6, M.black, -w * 0.2, h * 0.5, d / 2).rotation.x = Math.PI / 2;
-  B(g, w * 0.3, 1.2, 0.4, mat('#2fbf5b'), w * 0.2, h * 0.75, d / 2 + 0.1, { cast: false });
+  const kind = SOCKET_KINDS[spec.kind] ? spec.kind : 'enkel';
+  const [w, d, h] = spec.size || SOCKET_KINDS[kind].size;
+  const plate = mat('#f6f6f3');
+  B(g, w, h, d, plate, 0, -h / 2, 0, { rounded: 0.6, cast: false });
+  const holes = kind === 'dubbel' || kind === 'laadpunt' ? [-w / 4, w / 4] : kind === 'enkel' ? [0] : [];
+  for (const x of holes) {
+    const c = cyl(g, 2.6, 2.6, 0.5, mat('#e2e2de'), x, 0, d / 2); c.rotation.x = Math.PI / 2; c.position.set(x, 0, d / 2 + 0.2);
+    for (const dx of [-1, 1]) { const pin = cyl(g, 0.35, 0.35, 0.6, M.black, x + dx * 0.95, 0, 0); pin.rotation.x = Math.PI / 2; pin.position.set(x + dx * 0.95, 0, d / 2 + 0.5); }
+  }
+  if (kind === 'perilex') { const c = cyl(g, 3.6, 3.6, 0.6, mat('#d5d5d0'), 0, 0, 0); c.rotation.x = Math.PI / 2; c.position.set(0, 0, d / 2 + 0.3); }
+  if (kind === 'laadpunt') B(g, w * 0.5, 1, 0.4, mat('#2fbf5b'), 0, h / 2 - 1.6, d / 2 + 0.1, { cast: false });
+  if (kind === 'driver') B(g, w * 0.3, 1, 0.4, mat('#f0b429'), 0, -0.5, d / 2 + 0.1, { cast: false });
+  if (kind === 'aansluitpunt') B(g, w * 0.5, w * 0.5, 0.4, mat('#cfcfca'), 0, -w * 0.25, d / 2 + 0.1, { cast: false });
   return g;
 }
 
@@ -547,7 +585,7 @@ export const BUILDERS = {
   worktop, sink, hob, hood, panel,
   washer: (s) => appliance(s, 'washer'),
   dryer: (s) => appliance(s, 'dryer'),
-  basketDrawers, openShelf, workbench, ironingCabinet,
+  basketDrawers, openShelf, workbench, ironingCabinet, ironingBoard,
   ledStrip, walkway, bed,
   nightstand: floatingBox, wallLight, pendant, rug, curtain, slatPanel, table, chair, plant, rail,
   car: garageCar, bike, stool, bikeRack, socket,

@@ -9,10 +9,11 @@ import { applyPatches, normalizePatch, encodeShare, decodeShare, validateScenari
 const params = new URLSearchParams(location.search);
 const PLAN_URL = params.get('plan') || 'plans/vleugel.json';
 const RENDER_MODE = params.get('ui') === '0';
+let elektraOn = params.get('elektra') === '1';
 const TYPE_NAMES = {
   base: 'Onderkast', tall: 'Hoge kast', wall: 'Bovenkast', wardrobe: 'Inbouwkast', plinth: 'Verhoging', fridge: 'Koelkast', freezer: 'Vriezer',
   ovenColumn: 'Oven-kolom', dishwasher: 'Vaatwasser', worktop: 'Werkblad', sink: 'Spoelbak', hob: 'Kookplaat', hood: 'Afzuigkap', panel: 'Paneel',
-  washer: 'Wasmachine', dryer: 'Droger', basketDrawers: 'Wasmandlades', openShelf: 'Open stelling', workbench: 'Werkplek', ironingCabinet: 'Strijkkast', bike: 'Fiets', bikeRack: 'Fietsenrek', socket: 'Stopcontact', stool: 'Barkruk',
+  washer: 'Wasmachine', dryer: 'Droger', basketDrawers: 'Wasmandlades', openShelf: 'Open stelling', workbench: 'Werkplek', ironingCabinet: 'Strijkkast', ironingBoard: 'Strijkplank', bike: 'Fiets', bikeRack: 'Fietsenrek', socket: 'Elektrapunt', stool: 'Barkruk',
   ledStrip: 'LED-strip', walkway: 'Looppad', bed: 'Bed', nightstand: 'Nachtkastje', wallLight: 'Wandlamp', pendant: 'Hanglamp', rug: 'Vloerkleed',
   curtain: 'Gordijn', slatPanel: 'Lamellenwand', table: 'Tafel', chair: 'Stoel', plant: 'Plant', rail: 'Kledingroede', car: 'Auto',
 };
@@ -104,6 +105,10 @@ async function init() {
   const v = params.get('view') || 'overzicht';
   if (v === 'walk') startWalk(params.get('room') || 'keuken', true);
   else goView(v, true);
+  if (params.get('cam')) { // render helper: cam=x,y,z,tx,ty,tz in cm
+    const c = params.get('cam').split(',').map(Number);
+    if (c.length === 6 && c.every(Number.isFinite)) { camera.position.copy(cm(c.slice(0, 3))); controls.target.copy(cm(c.slice(3))); controls.update(); }
+  }
   if (params.get('select')) selectItem(built.items[Number(params.get('select'))]);
   renderer.setAnimationLoop(loop);
   setTimeout(() => $('#loading').classList.add('done'), 150);
@@ -173,7 +178,51 @@ function showPlan(newPlan) {
   labelRoom = undefined;
   setActiveNav(mode === 'walk' ? (roomAt(camera.position.x / SCALE, camera.position.z / SCALE) || currentView) : currentView);
   updateWalls(0, true);
+  applyLayers();
   refreshPanels();
+}
+
+// Electrical layer: socket markers and their labels are only shown with the "Elektra" toggle on.
+function applyLayers() {
+  if (!built) return;
+  for (const g of built.items) if (g.userData.layer === 'elektra') g.visible = elektraOn;
+  for (const l of built.layerLabels || []) l.visible = elektraOn;
+}
+
+const EL_KIND = { dubbel: 'Dubbele wcd', enkel: 'Enkele wcd', perilex: 'Perilex', laadpunt: 'Laadpunt (dubbele wcd)', driver: 'LED-driver', aansluitpunt: 'Aansluitpunt licht' };
+function elektraRows() {
+  const pts = plan.items.filter((i) => i.layer === 'elektra');
+  return built.rooms.map((r) => ({ room: r, pts: pts.filter((p) => p.room === r.id) })).filter((x) => x.pts.length);
+}
+function elektraText() {
+  const lines = [`Elektra-overzicht · ${plan.meta?.title || ''} · scenario: ${current.name}`, 'Hoogtes = hart van de wandcontactdoos, gemeten vanaf de afgewerkte vloer.', ''];
+  for (const { room, pts } of elektraRows()) {
+    lines.push(`${room.name}`);
+    for (const p of pts) lines.push(`- ${p.label}: ${EL_KIND[p.kind] || p.kind}, ${p.elev} cm${p.group ? ', ' + p.group : ''}${p.note ? ' (' + p.note + ')' : ''}`);
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+function refreshElektra() {
+  const rows = elektraRows();
+  const n = rows.reduce((s, r) => s + r.pts.length, 0);
+  $('#tab-elektra').innerHTML = `<p class="small muted">Voorstel voor ${n} elektrapunten: wandcontactdozen en aansluitpunten. Zet <b>Elektra</b> bovenin aan om ze in 3D te zien. Hoogtes zijn tot het hart van de doos, gemeten vanaf de afgewerkte vloer.</p>
+    <div class="el-actions"><button class="btn" id="elCopy">Kopieer als tekst</button><button class="btn" id="elCsv">Download CSV</button><button class="btn" id="elShow">${elektraOn ? 'Verberg' : 'Toon'} in 3D</button></div>
+    ${rows.map(({ room, pts }) => `<div class="el-room"><h3>${esc(room.name)} <small class="muted">${pts.length} punten</small></h3>
+      <table class="el"><tr><th>Punt</th><th>Type</th><th>Hoogte</th><th>Groep / opmerking</th></tr>
+      ${pts.map((p) => `<tr class="clickable" data-item="${plan.items.indexOf(p)}"><td>${esc(p.label)}</td><td>${EL_KIND[p.kind] || p.kind}</td><td class="h">${p.elev} cm</td><td>${esc(p.group || '')}${p.note ? `<br><span class="muted small">${esc(p.note)}</span>` : ''}</td></tr>`).join('')}
+      </table></div>`).join('')}`;
+  $('#elCopy').onclick = async () => { try { await navigator.clipboard.writeText(elektraText()); toast('Elektra-overzicht gekopieerd'); } catch { toast('Kopiëren lukt niet in deze browser'); } };
+  $('#elCsv').onclick = () => {
+    const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = ['Ruimte;Punt;Type;Hoogte (cm);Groep;Opmerking', ...rows.flatMap(({ room, pts }) => pts.map((p) => [room.name, p.label, EL_KIND[p.kind] || p.kind, p.elev, p.group, p.note].map(q).join(';')))].join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' })); a.download = `elektra-${(current.id || current.key || 'ontwerp').replace(/[^\w-]/g, '')}.csv`; a.click();
+  };
+  $('#elShow').onclick = () => $('#tElektra').click();
+  $('#tab-elektra').querySelectorAll('tr[data-item]').forEach((tr) => tr.onclick = () => {
+    if (!elektraOn) $('#tElektra').click();
+    const g = built.items[Number(tr.dataset.item)]; selectItem(g); focusItem(g);
+  });
 }
 
 async function loadScenario(sc, { initial = false } = {}) {
@@ -237,6 +286,8 @@ function buildUIStatic() {
     wallsMode = { auto: 'low', low: 'high', high: 'auto' }[wallsMode];
     e.target.textContent = 'Wanden: ' + { auto: 'auto', low: 'laag', high: 'hoog' }[wallsMode];
   };
+  $('#tElektra').classList.toggle('on', elektraOn);
+  $('#tElektra').onclick = () => { elektraOn = !elektraOn; $('#tElektra').classList.toggle('on', elektraOn); applyLayers(); if (elektraOn) showTab('elektra'); };
   $('#tPanel').onclick = () => { app.classList.toggle('panel-open'); $('#tPanel').classList.toggle('on', app.classList.contains('panel-open')); };
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
   $('#tScenario').onclick = () => { showTab('scen'); if (window.innerWidth <= 820 && !app.classList.contains('panel-open')) $('#tPanel').click(); };
@@ -273,6 +324,11 @@ function refreshPanels() {
     l.element.addEventListener('pointerdown', (e) => e.stopPropagation());
     l.element.addEventListener('click', (e) => { e.stopPropagation(); selectItem(built.items[Number(l.element.dataset.index)]); });
   }
+  for (const l of built.layerLabels || []) {
+    l.element.addEventListener('pointerdown', (e) => e.stopPropagation());
+    l.element.addEventListener('click', (e) => { e.stopPropagation(); selectItem(built.items[Number(l.element.dataset.index)]); });
+  }
+  refreshElektra();
   refreshScenarioUI();
 }
 
@@ -349,6 +405,7 @@ function pick(clientX, clientY) {
   for (const h of hits) {
     if (!h.object.visible) continue;
     const root = h.object.userData.itemRoot;
+    if (root && !root.visible) continue;
     if (root && root.userData.item.type !== 'walkway' && root.userData.item.type !== 'rug') return root;
     if (root) return root;
   }
@@ -377,7 +434,7 @@ function selectItem(g) {
       ${s[0] ? `<span>Breedte</span><span>${s[0]} cm</span>` : ''}
       ${s[1] ? `<span>Diepte</span><span>${s[1]} cm</span>` : ''}
       ${s[2] ? `<span>Hoogte</span><span>${s[2]} cm</span>` : ''}
-      ${it.elev ? `<span>Vanaf vloer</span><span>${it.elev} cm</span>` : ''}
+      ${it.layer === 'elektra' ? `<span>Soort</span><span>${EL_KIND[it.kind] || it.kind}</span><span>Hoogte (hart)</span><span>${it.elev} cm</span>${it.group ? `<span>Groep</span><span>${esc(it.group)}</span>` : ''}` : (it.elev ? `<span>Vanaf vloer</span><span>${it.elev} cm</span>` : '')}
       ${it.material ? `<span>Materiaal</span><span>${it.material}</span>` : ''}
     </div>
     ${it.note ? `<p>${it.note}</p>` : ''}`;
@@ -749,12 +806,13 @@ async function swapCompare() {
 // Public API (used by tests and, later, the chat assistant).
 window.viz = {
   applyEdit, undo: undoEdit, ops: Object.keys(OPS),
+  elektra: () => ({ on: elektraOn, visible: built.items.filter((g) => g.userData.layer === 'elektra' && g.visible).length, total: built.items.filter((g) => g.userData.layer === 'elektra').length }),
   getScenario: () => toScenarioFile(current), getPlan: () => structuredClone(plan),
   loadScenario: (key) => loadScenario(scenarioByKey(key)),
   listScenarios: () => [scenarioByKey('base'), ...repoScenarios, ...localScenarios()].map((s) => ({ key: s.key, name: s.name })),
   shareUrl: () => `${location.origin}${location.pathname}#s=${encodeShare(current)}`,
   startWalk: (room) => startWalk(room), stopWalk: () => stopWalk(),
-  tryMove, roomAt, walkable,
+  tryMove, roomAt, walkable, goView: (id) => goView(id, true),
   setPose: (x, z, yawDeg = 0) => { camera.position.x = x * SCALE; camera.position.z = z * SCALE; walk.yaw = THREE.MathUtils.degToRad(yawDeg); walk.pitch = 0; },
   position: () => ({ x: camera.position.x / SCALE, z: camera.position.z / SCALE, yaw: THREE.MathUtils.radToDeg(walk.yaw), room: roomAt(camera.position.x / SCALE, camera.position.z / SCALE) }),
 };

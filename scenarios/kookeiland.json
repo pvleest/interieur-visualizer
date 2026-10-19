@@ -81,7 +81,7 @@
         "id": "keuken-barkruk-1",
         "type": "stool",
         "room": "keuken",
-        "pos": [372, 597],
+        "pos": [386, 597],
         "size": [36, 36, 66],
         "material": "@accent",
         "label": "3 barkrukken",
@@ -90,11 +90,11 @@
     },
     {
       "op": "addItem",
-      "item": {"id": "keuken-barkruk-2", "type": "stool", "room": "keuken", "pos": [430, 597], "size": [36, 36, 66], "material": "@accent"}
+      "item": {"id": "keuken-barkruk-2", "type": "stool", "room": "keuken", "pos": [444, 597], "size": [36, 36, 66], "material": "@accent"}
     },
     {
       "op": "addItem",
-      "item": {"id": "keuken-barkruk-3", "type": "stool", "room": "keuken", "pos": [488, 597], "size": [36, 36, 66], "material": "@accent"}
+      "item": {"id": "keuken-barkruk-3", "type": "stool", "room": "keuken", "pos": [502, 597], "size": [36, 36, 66], "material": "@accent"}
     },
     {
       "op": "addItem",
@@ -122,6 +122,26 @@
         "size": [30, 30, 36]
       }
     },
+    {"op": "removeItem", "id": "el-keuken-werkblad-3"},
+    {"op": "removeItem", "id": "el-keuken-tafel"},
+    {
+      "op": "addItem",
+      "item": {
+        "id": "el-keuken-eiland",
+        "type": "socket",
+        "layer": "elektra",
+        "kind": "dubbel",
+        "room": "keuken",
+        "label": "Eiland (kopse kant)",
+        "pos": [531, 526],
+        "rot": 90,
+        "elev": 70,
+        "size": [16, 1.6, 8.5],
+        "group": "groep keuken 3",
+        "note": "vloerdoos/leiding door de vloer naar het eiland; mixer, laptop",
+        "mount": "kookeiland"
+      }
+    },
     {
       "op": "setView",
       "id": "keuken",
@@ -136,7 +156,8 @@
           "Rechte aanrechtwand met spoelbak, vaatwasser en 80 cm inductie; het korte L-been vervalt.",
           "Vrijstaand kookeiland van 212 × 96 cm met 2 × 100 cm ladekasten en een bar voor drie krukken aan de raamkant.",
           "Loopruimte: 92 cm tussen aanrecht en eiland, 99 cm langs de kastenwand en 110 cm naar de woonkamer.",
-          "De ronde tafel vervalt: je eet aan het eiland."
+          "De ronde tafel vervalt: je eet aan het eiland.",
+          "De krukken staan aan de oostkant van de bar, zodat het westelijke, openschuivende deel van de nieuwe schuifpui vrij blijft."
         ]
       }
     }

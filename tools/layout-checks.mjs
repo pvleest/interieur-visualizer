@@ -2,7 +2,7 @@
 // Used by tools/test.mjs for the base design and every scenario.
 // All coordinates in cm; x = east, z = south; item rot 0 = front faces +z.
 
-const SKIP = new Set(['rug', 'walkway', 'ledStrip', 'wallLight', 'pendant', 'curtain', 'sink', 'hob']);
+const SKIP = new Set(['rug', 'walkway', 'ledStrip', 'wallLight', 'pendant', 'curtain', 'sink', 'hob', 'socket']);
 const ALLOWED_PAIRS = [['table', 'chair'], ['table', 'stool'], ['bike', 'bikeRack']];
 const TOL = 1.01;
 
@@ -93,15 +93,46 @@ export function checkPlan(plan, opts = {}) {
         }
       }
       if (type === 'door' || type === 'glassdoor' || type === 'slider') {
-        const m = type === 'slider' ? 25 : 0;
+        // sliders: the half that slides open (opens: 'start' | 'end'), otherwise the middle part
+        let a0 = op.offset, a1 = op.offset + op.width;
+        if (type === 'slider') {
+          if (op.opens === 'start') { a0 += 10; a1 = op.offset + op.width / 2 - 10; }
+          else if (op.opens === 'end') { a0 = op.offset + op.width / 2 + 10; a1 -= 10; }
+          else { a0 += 25; a1 -= 25; }
+        }
         for (const side of [-1, 1]) {
-          const zone = rectOf([F.P(op.offset + m, side * F.t / 2), F.P(op.offset + op.width - m, side * (F.t / 2 + 50))]);
+          const zone = rectOf([F.P(a0, side * F.t / 2), F.P(a1, side * (F.t / 2 + 50))]);
           for (const it of items) {
             const [v0] = vertical(it);
             if (v0 < 200 && rectOv(fp.get(it.id), zone)) out.push(`blokkeert doorgang ${w.id}@${op.offset}: ${it.id}`);
           }
         }
       }
+    }
+  }
+  // 5b. every cabinet / appliance front keeps >= 70 cm clear space in front (to open doors and drawers).
+  // A perpendicular run of base units that abuts the front is a normal L-corner (blind corner up to 65 cm).
+  const FRONTS = new Set(['base', 'tall', 'wardrobe', 'fridge', 'freezer', 'ovenColumn', 'dishwasher', 'washer', 'dryer', 'basketDrawers', 'ironingCabinet']);
+  const RUN = new Set(['base', 'basketDrawers', 'dishwasher', 'washer', 'dryer', 'plinth']);
+  const SOFT = new Set(['chair', 'stool', 'worktop', 'panel', 'wall', 'hood', 'plant', 'rail']); // movable or above head/worktop height
+  const CLEAR = opts.frontClear ?? 70;
+  for (const it of items) {
+    if (!FRONTS.has(it.type) || it.front === false || vertical(it)[0] >= 150) continue;
+    const a = ((it.rot || 0) * Math.PI) / 180, fx = Math.round(Math.sin(a)), fz = Math.round(Math.cos(a));
+    const f = fp.get(it.id), d = it.size[1];
+    const [cx, cz] = it.pos;
+    const zone = fx ? { x0: fx > 0 ? cx + d / 2 : cx - d / 2 - CLEAR, x1: fx > 0 ? cx + d / 2 + CLEAR : cx - d / 2, z0: f.z0 + 2, z1: f.z1 - 2 }
+                    : { z0: fz > 0 ? cz + d / 2 : cz - d / 2 - CLEAR, z1: fz > 0 ? cz + d / 2 + CLEAR : cz - d / 2, x0: f.x0 + 2, x1: f.x1 - 2 };
+    for (const b of items) {
+      if (b === it || SOFT.has(b.type) || vertical(b)[0] >= 150) continue;
+      const g = fp.get(b.id);
+      if (!rectOv(g, zone)) continue;
+      if (RUN.has(it.type) && RUN.has(b.type)) { // L-corner?
+        const gap = fx ? (fx > 0 ? g.x0 - zone.x0 : zone.x1 - g.x1) : (fz > 0 ? g.z0 - zone.z0 : zone.z1 - g.z1);
+        const along = fx ? ov(g.z0, g.z1, zone.z0, zone.z1) : ov(g.x0, g.x1, zone.x0, zone.x1);
+        if (gap <= 6 && along <= 65) continue;
+      }
+      out.push(`te weinig ruimte voor ${it.id} (< ${CLEAR} cm): ${b.id}`);
     }
   }
   // 6. walkways: every clear rectangle (or the polygon's bounding box) >= 120 wide and empty
@@ -118,7 +149,7 @@ export function checkPlan(plan, opts = {}) {
   if (!has((i) => i.type === 'freezer')) out.push('eis: vriezer ontbreekt');
   if (!has((i) => i.type === 'washer') || !has((i) => i.type === 'dryer')) out.push('eis: wasmachine + droger ontbreken');
   if (!has((i) => i.type === 'basketDrawers')) out.push('eis: wasopslag (wasmandlades) ontbreekt');
-  if (!has((i) => i.type === 'ironingCabinet')) out.push('eis: strijkvoorziening ontbreekt');
+  if (!has((i) => i.type === 'ironingCabinet' || i.type === 'ironingBoard')) out.push('eis: strijkvoorziening ontbreekt');
   const gStore = plan.items.filter((i) => i.room === 'garage' && ['tall', 'wardrobe'].includes(i.type) && (i.size?.[2] || 0) >= 200).reduce((s, i) => s + i.size[0], 0);
   if (gStore < 300) out.push(`eis: hoge garagekasten slechts ${gStore} cm`);
   if (!has((i) => i.type === 'walkway' && i.room === 'garage')) out.push('eis: looppad garage ontbreekt');
@@ -130,6 +161,36 @@ export function checkPlan(plan, opts = {}) {
   for (const b of eb) {
     const f = footprint(b);
     if (!sockets.some((s) => distRect(f, s.pos[0], s.pos[1]) <= 150)) out.push(`eis: e-bike ${b.id} staat niet binnen 150 cm van een stopcontact`);
+  }
+  // 7b. electrical points: on a wall face (unless mounted in furniture), linked appliances exist and are nearby,
+  // every appliance that needs power has its own point, washer and dryer on separate points
+  const el = sockets.filter((s) => s.layer === 'elektra');
+  const byId = new Map(plan.items.map((i) => [i.id, i]));
+  for (const s of el) {
+    if (!s.mount) {
+      const onWall = plan.walls.some((w) => {
+        const F = wallFrame(w, defaults);
+        const dx = s.pos[0] - w.from[0], dz = s.pos[1] - w.from[1];
+        const a = dx * F.u[0] + dz * F.u[1], q = dx * F.n[0] + dz * F.n[1];
+        return a >= 0 && a <= F.len && Math.abs(Math.abs(q) - F.t / 2) <= 4;
+      });
+      if (!onWall) out.push(`elektra: ${s.id} zit niet op een wand`);
+    }
+    if (!(s.elev > 5 && s.elev < 250)) out.push(`elektra: ${s.id} hoogte ${s.elev} cm onlogisch`);
+    for (const id of s.serves || []) {
+      const t = byId.get(id);
+      if (!t) { out.push(`elektra: ${s.id} voedt onbekend item ${id}`); continue; }
+      if (t.room !== s.room) out.push(`elektra: ${s.id} voedt ${id} in een andere ruimte`);
+      else if (t.size && distRect(footprint(t), s.pos[0], s.pos[1]) > 150) out.push(`elektra: ${s.id} te ver van ${id}`);
+    }
+  }
+  const NEEDS = ['fridge', 'freezer', 'ovenColumn', 'dishwasher', 'hob', 'hood', 'washer', 'dryer'];
+  for (const a of plan.items.filter((i) => NEEDS.includes(i.type) || (i.type === 'bike' && i.ebike))) {
+    if (!el.some((s) => (s.serves || []).includes(a.id))) out.push(`elektra: geen aansluiting voor ${a.id}`);
+  }
+  for (const s of el) {
+    const t = (s.serves || []).map((id) => byId.get(id)?.type);
+    if (t.includes('washer') && t.includes('dryer')) out.push(`elektra: wasmachine en droger delen ${s.id}`);
   }
   const bw = plan.walls.find((w) => w.id === 'bijkeuken-slaapkamer');
   if (bw) {

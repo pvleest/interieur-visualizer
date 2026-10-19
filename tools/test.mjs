@@ -57,7 +57,13 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   const gdoor = await WALK(page, [-440, 255], [[-440, 405]]);
   check(gdoor.end.z > 385, 'slaapkamer tuindeur is walkable');
   const entree = await WALK(page, [60, 250], [[60, 380]]);
-  check(entree.end.z > 360, 'entreedeur garage (90 cm) is walkable');
+  check(entree.end.z > 360, 'glazen entreedeur garage (90 cm) is walkable');
+  const kslider = await WALK(page, [290, 600], [[290, 720]]);
+  check(kslider.end.z > 700, 'keuken schuifpui (292 cm) is walkable (z=' + kslider.end.z.toFixed(0) + ')');
+  const kwall = await WALK(page, [530, 600], [[530, 720]]);
+  check(kwall.end.z < 645, 'keuken gevel next to the schuifpui blocks (z=' + kwall.end.z.toFixed(0) + ')');
+  const ops = await page.evaluate(() => Object.fromEntries(window.viz.getPlan().walls.flatMap((w) => (w.openings || []).filter((o) => o.id).map((o) => [o.id, o.type + '/' + (o.sill || 0) + '/' + o.height]))));
+  check(ops['entree-deur'] === 'glassdoor/0/211' && ops['keuken-schuifpui'] === 'slider/0/215', 'entreedeur is a glass door, keukenraam is now a schuifpui to the floor (' + ops['entree-deur'] + ', ' + ops['keuken-schuifpui'] + ')');
   const raam = await WALK(page, [-616, 255], [[-616, 405]]);
   check(raam.end.z < 305, 'slaapkamer raam tot de vloer blocks (z=' + raam.end.z.toFixed(0) + ')');
   // 3. walls still block
@@ -137,9 +143,34 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   broken.items.find((i) => i.id === 'bijkeuken-wasmachine').pos = [-317, 260];
   broken.items.find((i) => i.id === 'garage-schoenenbank').pos = [200, 200];
   broken.items = broken.items.filter((i) => i.id !== 'garage-fiets-2');
-  broken.items.find((i) => i.id === 'garage-laadpunt').pos = [400, 2];
+  broken.items.find((i) => i.id === 'el-garage-laadpunt-1').pos = [400, 1];
+  broken.items = broken.items.filter((i) => i.id !== 'el-bijkeuken-droger');
   const caught = checkPlan(broken, { route: DEFAULT_ROUTE });
-  check(caught.some((m) => m.startsWith('overlap')) && caught.some((m) => m.includes('slaapkamerwand')) && caught.some((m) => m.includes('looppad')) && caught.some((m) => m.includes('fietsen')) && caught.some((m) => m.includes('stopcontact')), 'layout checker detects overlap, machine against bedroom wall, blocked walkway, missing bike and e-bike far from socket (' + caught.length + ' issues)');
+  check(caught.some((m) => m.startsWith('overlap')) && caught.some((m) => m.includes('slaapkamerwand')) && caught.some((m) => m.includes('looppad')) && caught.some((m) => m.includes('fietsen')) && caught.some((m) => m.includes('stopcontact') || m.includes('te ver van garage-fiets-5')) && caught.some((m) => m.includes('geen aansluiting voor bijkeuken-droger')), 'layout checker detects overlap, machine against bedroom wall, blocked walkway, missing bike, e-bike far from socket and missing dryer socket (' + caught.length + ' issues)' + (caught.some((m) => m.includes('geen aansluiting voor bijkeuken-droger')) ? '' : JSON.stringify(caught)));
+
+  // Elektra layer: hidden by default, toggle shows markers + labels, panel lists every point per room
+  const el0 = await page.evaluate(() => window.viz.elektra());
+  check(!el0.on && el0.visible === 0 && el0.total >= 20, `elektra markers hidden by default (${el0.total} points)`);
+  await page.evaluate(() => { document.querySelector('#tPanel:not(.on)')?.click(); });
+  await page.bringToFront();
+  await page.evaluate(() => window.viz.goView('garage'));
+  await page.click('#tElektra');
+  const shownLabels = () => [...document.querySelectorAll('.layer-label')].filter((e) => e.style.display !== 'none').length;
+  await page.waitForFunction(shownLabels, null, { timeout: 20000 }).catch(() => {}); // swiftshader renders slowly
+  const el1 = await page.evaluate(() => ({ s: window.viz.elektra(), rows: document.querySelectorAll('#tab-elektra tr[data-item]').length, rooms: [...document.querySelectorAll('#tab-elektra .el-room h3')].map((h) => h.firstChild.textContent.trim()), shown: [...document.querySelectorAll('.layer-label')].filter((e) => e.style.display !== 'none').length }));
+  check(el1.s.on && el1.s.visible === el1.s.total && el1.rows === el1.s.total && el1.shown > 0, `elektra toggle shows ${el1.s.visible} markers, ${el1.shown} labels in view; panel lists ${el1.rows} points in ${el1.rooms.join(', ')}`);
+  await page.click('#tElektra');
+  const el2 = await page.evaluate(() => ({ s: window.viz.elektra(), shown: [...document.querySelectorAll('.layer-label')].filter((e) => e.style.display !== 'none').length }));
+  await page.waitForFunction(() => [...document.querySelectorAll('.layer-label')].every((e) => e.style.display === 'none'), null, { timeout: 20000 }).catch(() => {});
+  const el3 = await page.evaluate(() => [...document.querySelectorAll('.layer-label')].filter((e) => e.style.display !== 'none').length);
+  check(!el2.s.on && el2.s.visible === 0 && el3 === 0, 'elektra toggle off hides markers and labels again');
+
+  // checker: slider clear zone and cabinet front clearance
+  const broken2 = structuredClone(basePlan);
+  broken2.items.find((i) => i.id === 'keuken-ronde-tafel-80').pos = [290, 600];
+  broken2.items.push({ id: 'test-strijkkast', type: 'ironingCabinet', room: 'bijkeuken', pos: [-317, 100], rot: 90, size: [60, 60, 240] });
+  const caught2 = checkPlan(broken2, {});
+  check(caught2.some((m) => m.includes('keuken-gevel') && m.includes('keuken-ronde-tafel-80')) && caught2.some((m) => m.includes('ruimte voor bijkeuken-schoonmaakkast')), 'layout checker detects a table in front of the kitchen schuifpui and a blocked cleaning cabinet (' + caught2.join('; ') + ')');
 
   // 5. scenarios + edit API
   const list = await page.evaluate(() => window.viz.listScenarios().map((s) => s.name));
@@ -149,7 +180,7 @@ const WALK = async (page, start, path) => page.evaluate(({ start, path }) => {
   check(pal.frontBase === 'antraciet' && pal.worktop === 'zwartComposiet' && pal.floorExtension === 'betonDonker', 'Donker & strak palette applied');
   const e1 = await page.evaluate(() => window.viz.applyEdit({ op: 'moveItem', id: 'keuken-ronde-tafel-80', by: [0, -20] }));
   const tpos = await page.evaluate(() => window.viz.getPlan().items.find((i) => i.id === 'keuken-ronde-tafel-80').pos);
-  check(e1.ok && tpos[1] === 555, 'applyEdit moveItem works (pos ' + tpos + ')');
+  check(e1.ok && tpos[1] === 505, 'applyEdit moveItem works (pos ' + tpos + ')');
   const e2 = await page.evaluate(() => window.viz.applyEdit([{ op: 'removeItem', id: 'bijkeuken-plant' }, { op: 'addItem', item: { id: 'slaapkamer-plant', type: 'plant', room: 'slaapkamer', pos: [-740, 365], size: [40, 40, 110] } }, { op: 'updateOpening', wall: 'keuken-gevel', index: 0, set: { sill: 60 } }]));
   check(e2.ok, 'applyEdit batch (remove/add item, update opening)');
   const e3 = await page.evaluate(() => window.viz.applyEdit({ op: 'explode' }));

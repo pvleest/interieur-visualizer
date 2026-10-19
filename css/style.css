@@ -108,3 +108,15 @@ kbd { border:1px solid #ccc; border-bottom-width:2px; border-radius:4px; padding
   #walkpad { right:12px; bottom:76px; }
   .panel-open #walkpad { display:none; }
 }
+
+/* electrical layer */
+.layer-label { font-size:10.5px; padding:2px 7px 2px 5px; background:rgba(255,255,255,.95); color:#1d1f1e; border:1px solid #d8a31a; }
+.layer-label .dot { background:#d8a31a; }
+.layer-label em { font-style:normal; color:#8a6b10; margin-left:3px; }
+.hide-labels .layer-label { display:none; }
+#tElektra.on { background:#d8a31a; border-color:#d8a31a; color:#1d1f1e; }
+.el-room h3 { margin:14px 0 4px; }
+table.el { width:100%; border-collapse:collapse; font-size:12px; }
+table.el td, table.el th { text-align:left; padding:4px 4px; border-bottom:1px solid var(--line); vertical-align:top; }
+table.el td.h { white-space:nowrap; }
+.el-actions { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
